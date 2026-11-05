@@ -1,0 +1,172 @@
+{
+ "base": "http://localhost:4173",
+ "passed": 33,
+ "failed": 0,
+ "results": [
+  [
+   "english is default",
+   true,
+   ""
+  ],
+  [
+   "3D scene running",
+   true,
+   ""
+  ],
+  [
+   "3D canvas has size",
+   true,
+   ""
+  ],
+  [
+   "theme toggle goes dark",
+   true,
+   ""
+  ],
+  [
+   "theme persists after reload",
+   true,
+   ""
+  ],
+  [
+   "live search finds services",
+   true,
+   "3"
+  ],
+  [
+   "language toggle lists 200+",
+   true,
+   "227"
+  ],
+  [
+   "indonesian page loads",
+   true,
+   ""
+  ],
+  [
+   "indonesian prices are in rupiah",
+   true,
+   "Rp 1.000.000"
+  ],
+  [
+   "language carries to services page",
+   true,
+   ""
+  ],
+  [
+   "arabic is right to left",
+   true,
+   ""
+  ],
+  [
+   "arabic has no sideways overflow",
+   true,
+   "0"
+  ],
+  [
+   "ja home responds",
+   true,
+   "200"
+  ],
+  [
+   "hi home responds",
+   true,
+   "200"
+  ],
+  [
+   "sw home responds",
+   true,
+   "200"
+  ],
+  [
+   "my home responds",
+   true,
+   "200"
+  ],
+  [
+   "am home responds",
+   true,
+   "200"
+  ],
+  [
+   "zh-CN home responds",
+   true,
+   "200"
+  ],
+  [
+   "assistant: I need a landing page",
+   true,
+   "One-page landing page starts from $160. Read the terms for this service Other ma"
+  ],
+  [
+   "assistant: How much is a pen test?",
+   true,
+   "API penetration test starts from $2,200. Read the terms for this service Other m"
+  ],
+  [
+   "assistant: Can I pay with USDT?",
+   true,
+   "Yes. USDT and USDC are both accepted. One unit counts as one US dollar on the in"
+  ],
+  [
+   "assistant: How many revisions do I get?",
+   true,
+   "Revisions are included only in stage 1, the framework. Once you approve the fram"
+  ],
+  [
+   "assistant: zzqq xxyy",
+   true,
+   "I could not find that in the catalog. Send a request with a few details and a pe"
+  ],
+  [
+   "500 services listed",
+   true,
+   "500"
+  ],
+  [
+   "service filter works",
+   true,
+   "5"
+  ],
+  [
+   "terms page has the core rules",
+   true,
+   ""
+  ],
+  [
+   "terms differ between services",
+   true,
+   ""
+  ],
+  [
+   "catalog lists 200+ PDFs",
+   true,
+   "227"
+  ],
+  [
+   "mobile / has no sideways overflow",
+   true,
+   "0"
+  ],
+  [
+   "mobile /services/ has no sideways overflow",
+   true,
+   "0"
+  ],
+  [
+   "mobile /services/one-page-landing-page/ has no sideways overflow",
+   true,
+   "0"
+  ],
+  [
+   "reduced motion skips gsap",
+   true,
+   ""
+  ],
+  [
+   "no page or console errors",
+   true,
+   "[]"
+  ]
+ ]
+}

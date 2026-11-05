@@ -1,0 +1,22 @@
+{
+  "name": "techserva",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "translate": "node scripts/translate.mjs",
+    "build": "node scripts/build.mjs",
+    "pdf": "node scripts/catalog-pdf.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.0.0"
+  },
+  "devDependencies": {
+    "@fontsource-variable/geist": "^5.0.0",
+    "@fontsource/instrument-serif": "^5.0.0",
+    "gsap": "^3.13.0",
+    "lenis": "^1.3.0",
+    "playwright-core": "^1.64.1",
+    "three": "^0.180.0"
+  }
+}
