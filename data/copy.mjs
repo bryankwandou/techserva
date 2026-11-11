@@ -20,7 +20,7 @@ export const ui = {
   rule1_t: 'Paid in full before delivery', rule1_d: 'No site is handed over and no hosting is switched on until the order is fully paid.',
   rule2_t: 'Revisions end at stage 1', rule2_d: 'Change the framework as you like before it is approved. An overhaul after that counts as one new service.',
   rule3_t: 'Domain cost is separate', rule3_d: 'Prices never include the domain. You register it in your own name, so it stays yours.',
-  demo_title: 'See it working', demo_lead: 'A short walkthrough of the site, recorded from the live pages.',
+  demo_title: 'What we sell, in 52 seconds', demo_lead: 'How buying IT work from a price list goes, from the first search to the handover.', demo_tour: 'Watch the site walkthrough',
   catalog_title: 'The catalog as a PDF book', catalog_lead: 'One book per language, priced in that market\'s currency. Every service in the book links to its own terms page.',
   catalog_open: 'Open the catalog', catalog_all: 'All catalogs', download_pdf: 'Download PDF',
   price_note: 'Prices are starting prices. Exchange rates were last updated on the date shown in the catalog, and the final figure is written on your invoice.',

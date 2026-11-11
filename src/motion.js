@@ -21,6 +21,15 @@ export async function init() {
     onEnter: b => gsap.to(b, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', stagger: 0.07, clearProps: 'transform' }),
   });
 
+  // Hero buttons lean toward the pointer. Mouse only: on touch there is no hover to follow.
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    document.querySelectorAll('.hero .btn, .hero .down').forEach(el => {
+      const x = gsap.quickTo(el, 'x', { duration: 0.4, ease: 'power3.out' }), y = gsap.quickTo(el, 'y', { duration: 0.4, ease: 'power3.out' });
+      el.addEventListener('pointermove', e => { const r = el.getBoundingClientRect(); x((e.clientX - r.left - r.width / 2) * 0.22); y((e.clientY - r.top - r.height / 2) * 0.3); });
+      el.addEventListener('pointerleave', () => { x(0); y(0); });
+    });
+  }
+
   const path = document.querySelector('.steps svg.line path');
   if (path) {
     const len = path.getTotalLength();

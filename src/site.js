@@ -19,7 +19,7 @@ function setTheme(t) {
   store.set('theme', t);
   dispatchEvent(new CustomEvent('themechange', { detail: t }));
 }
-$('#theme')?.addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+$('#theme')?.addEventListener('click', e => { setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'); const b = e.currentTarget; b.classList.remove('spin'); void b.offsetWidth; b.classList.add('spin'); });
 $('#menu')?.addEventListener('click', () => $('nav.main').classList.toggle('open'));
 
 /* language */

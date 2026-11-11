@@ -50,8 +50,9 @@ copy(nm('lenis/dist/lenis.min.js'), 'assets/vendor/lenis.min.js');
 copy(nm('@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2'), 'assets/fonts/instrument-serif.woff2');
 copy(nm('@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2'), 'assets/fonts/instrument-serif-italic.woff2');
 copy(nm('@fontsource-variable/geist/files/geist-latin-wght-normal.woff2'), 'assets/fonts/geist.woff2');
-for (const f of ['walkthrough.mp4', 'walkthrough.jpg', 'og.jpg']) { const p = path.join(ROOT, 'src/media', f); if (fs.existsSync(p)) copy(p, `assets/${f}`); }
-const hasVideo = fs.existsSync(path.join(ROOT, 'src/media/walkthrough.mp4'));
+for (const f of ['ad.mp4', 'ad.jpg', 'walkthrough.mp4', 'walkthrough.jpg', 'og.jpg']) { const p = path.join(ROOT, 'src/media', f); if (fs.existsSync(p)) copy(p, `assets/${f}`); }
+const hasVideo = fs.existsSync(path.join(ROOT, 'src/media/ad.mp4'));
+const hasTour = fs.existsSync(path.join(ROOT, 'src/media/walkthrough.mp4'));
 
 const fx = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/fx.json'), 'utf8'));
 const currencies = new Set(langs.map(l => l.currency));
@@ -184,8 +185,8 @@ ${[[ui.how1_t, ui.how1_d], [ui.how2_t, ui.how2_d], [ui.how3_t, ui.how3_d], [ui.h
 </div></section>
 
 <section class="block solid" id="demo"><div class="wrap two">
-<div><h2 data-rise>${T(ui.demo_title)}</h2><p class="lead" data-rise style="margin-top:14px">${T(ui.demo_lead)}</p></div>
-<div class="video-frame" data-rise>${hasVideo ? `<video src="/assets/walkthrough.mp4" poster="/assets/walkthrough.jpg" autoplay muted loop playsinline controls preload="metadata"></video>` : ''}</div>
+<div><h2 data-rise>${T(ui.demo_title)}</h2><p class="lead" data-rise style="margin-top:14px">${T(ui.demo_lead)}</p>${hasTour ? `<p data-rise style="margin-top:18px"><a href="/assets/walkthrough.mp4">${T(ui.demo_tour)}</a></p>` : ''}</div>
+<div class="video-frame" data-rise>${hasVideo ? `<video src="/assets/ad.mp4" poster="/assets/ad.jpg" autoplay muted loop playsinline controls preload="metadata"></video>` : ''}</div>
 </div></section>
 
 <section class="block" id="book"><div class="wrap book">
