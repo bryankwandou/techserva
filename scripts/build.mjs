@@ -336,7 +336,9 @@ fs.writeFileSync(path.join(ROOT, 'vercel.json'), JSON.stringify({
       { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
       { key: 'Strict-Transport-Security', value: 'max-age=31536000' },
     ] },
-    { source: '/assets/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=3600' }] },
+    // Asset names carry no hash, so the browser must revalidate them or a visitor keeps the old CSS and JS after a deploy.
+    { source: '/assets/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }] },
+    { source: '/assets/(fonts|vendor)/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=604800' }] },
     { source: '/admin/(.*)', headers: [{ key: 'X-Robots-Tag', value: 'noindex' }] },
   ],
 }, null, 2));
