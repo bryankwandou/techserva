@@ -3,14 +3,13 @@
   "buildCommand": null,
   "framework": null,
   "cleanUrls": false,
-  "trailingSlash": true,
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'sha256-5YtgAnegQ/8kyWBkAimgW6xma3plMm90x6TxuPnau/0=' 'sha256-8373PMuO1hW68IEuSHROIBn6haNEqqXpWql3sToagk0='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+          "value": "default-src 'self'; script-src 'self' 'sha256-Y7FmC/nNEB9VM6JDdgGUib+b3KVHb1ZFzzak9sM5oVo=' 'sha256-8373PMuO1hW68IEuSHROIBn6haNEqqXpWql3sToagk0='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
         },
         {
           "key": "X-Content-Type-Options",

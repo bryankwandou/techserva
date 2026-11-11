@@ -1,6 +1,6 @@
 {
- "base": "http://localhost:4173",
- "passed": 33,
+ "base": "http://localhost:4320",
+ "passed": 38,
  "failed": 0,
  "results": [
   [
@@ -19,7 +19,22 @@
    ""
   ],
   [
-   "theme toggle goes dark",
+   "3D is moving on screen",
+   true,
+   ""
+  ],
+  [
+   "3D paints a visible world, not a flat colour",
+   true,
+   "135"
+  ],
+  [
+   "default theme is dark",
+   true,
+   ""
+  ],
+  [
+   "theme toggle goes light",
    true,
    ""
   ],
@@ -46,7 +61,7 @@
   [
    "indonesian prices are in rupiah",
    true,
-   "Rp 1.000.000"
+   "'Rp\\xa01.000.000'"
   ],
   [
    "language carries to services page",
@@ -61,7 +76,7 @@
   [
    "arabic has no sideways overflow",
    true,
-   "0"
+   "-15"
   ],
   [
    "ja home responds",
@@ -117,6 +132,16 @@
    "assistant: zzqq xxyy",
    true,
    "I could not find that in the catalog. Send a request with a few details and a pe"
+  ],
+  [
+   "assistant answers in /l/id/",
+   true,
+   "'Desain logo dimulai dari Rp\\xa0800.000.\\nBaca ketentuan untuk layanan ini\\n'"
+  ],
+  [
+   "assistant answers in /l/ja/",
+   true,
+   "'\\u30ed\\u30b4\\u30c7\\u30b6\\u30a4\\u30f3 \\u304b\\u3089\\u59cb\\u307e\\u308a\\u307e\\u3059 \\uffe540,000.\\n\\u3053\\u306e\\u30b5\\u30fc\\u30d3\\u30b9\\u306e\\u898f\\u7d04\\u3092\\u8aad\\u3080\\n\\u305d\\u306e\\u4ed6\\u306e\\u8a66\\u5408\\n\\u30e1\\u30fc\\u30eb\\u30de\\u30ac\\u30b8\\u30f3\\u306e\\u30c7\\u30b6\\u30a4\\u30f3 \\xb7 \\uffe515,000\\n\\u30c7\\u30b6\\u30a4'"
   ],
   [
    "500 services listed",

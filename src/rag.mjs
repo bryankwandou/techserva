@@ -52,6 +52,9 @@ export function search(index, query, k = 5) {
   return [...scores.entries()].map(([i, s]) => {
     let score = s * (1 + coverage.get(i) / (terms.length || 1));
     if (asksCost && docs[i].type === 'service') score *= 1.4;
+    // A plain request means the plain service, not its animated version.
+    if (docs[i].cat === 'motion' && !terms.some(t => /anim|motion|3d|gsap|lottie|three|scroll/.test(t))) score *= 0.8;
+    if (docs[i].cat === 'roast' && !terms.some(t => /roast|critique|kritik/.test(t))) score *= 0.8;
     return { doc: docs[i], score, coverage: coverage.get(i) / (terms.length || 1) };
   }).sort((a, b) => b.score - a.score).slice(0, k);
 }

@@ -65,7 +65,7 @@ write('assets/chat-ui.json', JSON.stringify(Object.fromEntries(['chat_none', 'ch
 const kb = [
   ...faq.map(([q, a]) => ({ type: 'faq', title: q, text: a, url: '/#faq', tk: K(q), xk: K(a) })),
   ...general.map(([q, a]) => ({ type: 'terms', title: q, text: a, url: '/terms/', tk: K(q), xk: K(a) })),
-  ...services.map(s => { const c = catById[s.cat]; return { type: 'service', title: s.name, text: c.blurb, url: `/services/${s.slug}/`, slug: s.slug, idr: s.idr, tk: K(s.name), xk: K(c.blurb) }; }),
+  ...services.map(s => { const c = catById[s.cat]; return { type: 'service', title: s.name, text: c.blurb, url: `/services/${s.slug}/`, slug: s.slug, idr: s.idr, cat: s.cat, tk: K(s.name), xk: K(c.blurb) }; }),
 ];
 write('assets/kb.json', JSON.stringify(kb));
 for (const l of langs) if (l.code !== 'en') write(`i18n/${l.code}.json`, JSON.stringify(keys.map(k => trans[l.code][k] || null)));
@@ -86,7 +86,7 @@ function shell({ lang = 'en', title, desc, urlPath, body, home = false, attrs = 
   const meta = langs.find(l => l.code === lang);
   const htmlLang = lang === 'iw' ? 'he' : lang;
   return `<!doctype html>
-<html lang="${htmlLang}" dir="${meta?.rtl ? 'rtl' : 'ltr'}" data-theme="light" data-scene="${home ? 'home' : 'quiet'}"${home ? ' data-home="1"' : ''}${lang !== 'en' ? ` data-page-lang="${lang}"` : ''} ${attrs}>
+<html lang="${htmlLang}" dir="${meta?.rtl ? 'rtl' : 'ltr'}" data-theme="dark" data-scene="${home ? 'home' : 'quiet'}"${home ? ' data-home="1"' : ''}${lang !== 'en' ? ` data-page-lang="${lang}"` : ''} ${attrs}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -94,10 +94,10 @@ function shell({ lang = 'en', title, desc, urlPath, body, home = false, attrs = 
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${SITE}${urlPath}">
 <meta property="og:type" content="website"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${SITE}${urlPath}"><meta property="og:image" content="${SITE}/assets/og.jpg"><meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#f4f1e8">
+<meta name="theme-color" content="#05070a">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 ${head}
-<script>(function(){try{var t=localStorage.getItem('theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t}catch(e){}})()</script>
+<script>(function(){try{var t=localStorage.getItem('theme');if(!t)t='dark';document.documentElement.dataset.theme=t}catch(e){}})()</script>
 <link rel="preload" href="/assets/fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/site.css">
 <script type="module" src="/assets/site.js"></script>
@@ -143,15 +143,15 @@ function homeBody(lang) {
   return (T, v) => {
   const [t1, t2] = v(ui.hero_title).includes(',') ? [v(ui.hero_title).split(',')[0], v(ui.hero_title).split(',').slice(1).join(',')] : [v(ui.hero_title), ''];
   return `
-<div class="wrap hero">
-<div data-hero>
+<div class="hero" id="stage">
+<div class="hero-copy" data-hero>
 <p class="kicker" data-k="${K(ui.hero_kicker)}">${esc(v(ui.hero_kicker))}</p>
-<h1>${esc(t1)}${t2 ? `,<br><em>${esc(t2.trim())}</em>` : ''}</h1>
+<h1>${esc(t1)}${t2 ? `, <em>${esc(t2.trim())}</em>` : ''}</h1>
 <p class="lead" data-k="${K(ui.hero_lead)}">${esc(v(ui.hero_lead))}</p>
 <div class="search-box"><input id="home-search" type="search" autocomplete="off" data-kp="${K(ui.search_placeholder)}" placeholder="${esc(v(ui.search_placeholder))}" aria-label="${esc(v(ui.search_placeholder))}" data-none="${esc(v(ui.search_none))}"><div class="search-results" id="home-results" hidden></div></div>
 <div class="actions"><a class="btn primary" href="/services/">${T(ui.hero_cta)}</a><button class="btn" type="button" data-open-chat>${T(ui.hero_cta2)}</button></div>
+<a class="down" href="#cats" aria-label="${esc(v(ui.cats_title))}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a>
 </div>
-<div class="hero-stage" id="stage">
 <p class="hint">${T(ui.scene_hint)}</p>
 <article class="ticket" id="ticket" aria-live="off">
 <div class="code"><span class="t-code">${services[0].code}</span><span class="t-cat">${esc(v(categories[0].name))}</span></div>
@@ -327,7 +327,7 @@ const hash = s => `'sha256-${crypto.createHash('sha256').update(s).digest('base6
 const inlineScripts = [...new Set([...fs.readFileSync(path.join(OUT, 'index.html'), 'utf8').matchAll(/<script>([\s\S]*?)<\/script>/g), ...fs.readFileSync(path.join(OUT, 'admin/index.html'), 'utf8').matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]))];
 const csp = `default-src 'self'; script-src 'self' ${inlineScripts.map(hash).join(' ')}; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`;
 fs.writeFileSync(path.join(ROOT, 'vercel.json'), JSON.stringify({
-  outputDirectory: 'public', buildCommand: null, framework: null, cleanUrls: false, trailingSlash: true,
+  outputDirectory: 'public', buildCommand: null, framework: null, cleanUrls: false,
   headers: [
     { source: '/(.*)', headers: [
       { key: 'Content-Security-Policy', value: csp },

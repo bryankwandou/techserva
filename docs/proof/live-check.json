@@ -1,0 +1,137 @@
+{
+ "base": "https://techserva.vercel.app",
+ "passed": 25,
+ "failed": 1,
+ "results": [
+  [
+   "home responds",
+   true,
+   "200"
+  ],
+  [
+   "header content-security-policy",
+   true,
+   ""
+  ],
+  [
+   "header x-content-type-options",
+   true,
+   ""
+  ],
+  [
+   "header strict-transport-security",
+   true,
+   ""
+  ],
+  [
+   "header referrer-policy",
+   true,
+   ""
+  ],
+  [
+   "admin API refuses without login",
+   true,
+   ""
+  ],
+  [
+   "admin API search refuses without login",
+   true,
+   ""
+  ],
+  [
+   "wrong password refused",
+   true,
+   ""
+  ],
+  [
+   "forged cookie refused",
+   true,
+   ""
+  ],
+  [
+   "lead needs agreement",
+   true,
+   ""
+  ],
+  [
+   "lead rejects unknown service",
+   true,
+   ""
+  ],
+  [
+   "lead saved",
+   true,
+   "200"
+  ],
+  [
+   "honeypot looks successful",
+   true,
+   "200"
+  ],
+  [
+   "Indonesian PDF downloads",
+   true,
+   "179334"
+  ],
+  [
+   "PDF links to 500 different terms pages",
+   true,
+   "500"
+  ],
+  [
+   "sampled PDF terms links open",
+   true,
+   "[]"
+  ],
+  [
+   "dashboard shows 50,000 templates",
+   true,
+   "50,000 of 50,000 templates. Page 1."
+  ],
+  [
+   "template search narrows results",
+   true,
+   "400 of 50,000 templates. Page 1."
+  ],
+  [
+   "template opens with a real prompt",
+   true,
+   ""
+  ],
+  [
+   "copy to clipboard works",
+   true,
+   ""
+  ],
+  [
+   "queue holds 50,000 sample clients",
+   true,
+   "Added 50,000 sample clients in 71.6 seconds."
+  ],
+  [
+   "queue counter shows 50,000",
+   false,
+   ""
+  ],
+  [
+   "loop gives step 1 prompt with client filled in",
+   true,
+   ""
+  ],
+  [
+   "loop feeds the reply into the next step",
+   true,
+   ""
+  ],
+  [
+   "saved request appears decrypted",
+   true,
+   "TS-MW38OTB0-2EA5"
+  ],
+  [
+   "no admin page errors",
+   true,
+   "[]"
+  ]
+ ]
+}

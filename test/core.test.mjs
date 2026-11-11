@@ -68,7 +68,7 @@ test('each service gets terms that differ by category and state the core rules',
 const kb = [
   ...faq.map(([title, text]) => ({ type: 'faq', title, text })),
   ...general.map(([title, text]) => ({ type: 'terms', title, text })),
-  ...services.map(s => ({ type: 'service', title: s.name, text: categories.find(c => c.id === s.cat).blurb, slug: s.slug })),
+  ...services.map(s => ({ type: 'service', cat: s.cat, title: s.name, text: categories.find(c => c.id === s.cat).blurb, slug: s.slug })),
 ];
 const index = buildIndex(kb);
 const cases = [
@@ -89,7 +89,8 @@ const cases = [
   ['my website was hacked', 'service', /hacked/i],
   ['whatsapp bot', 'service', /whatsapp/i],
   ['saya butuh landing page', 'service', /landing page/i],
-  ['berapa harga logo', 'service', /logo/i],
+  ['berapa harga logo', 'service', /logo design/i],
+  ['logo roast', 'service', /logo roast/i],
   ['bisa bayar pakai usdt', null, /USDT/],
   ['rag chatbot', 'service', /rag chatbot/i],
   ['3d website', 'service', /3d/i],

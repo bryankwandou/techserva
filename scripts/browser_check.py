@@ -10,7 +10,7 @@ def check(name, ok, info=""):
     print(("PASS" if ok else "FAIL"), name, info)
 
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-gl=swiftshader", "--enable-webgl", "--ignore-gpu-blocklist"])
+    b = p.chromium.launch(channel="chrome", headless=False, args=["--use-angle=d3d11", "--ignore-gpu-blocklist", "--window-position=-2000,0"])
     errs = []
     def page(w=1440, h=900, **kw):
         ctx = b.new_context(viewport={"width": w, "height": h}, locale="en-US", **kw)
@@ -26,14 +26,22 @@ with sync_playwright() as p:
     check("3D scene running", pg.evaluate("document.documentElement.dataset.scene3d") == "on")
     painted = pg.evaluate("""() => { const c=document.getElementById('scene'); return c.width>0 && c.height>0 }""")
     check("3D canvas has size", painted)
-    pg.screenshot(path=f"{OUT}/01-home-light.jpg", quality=80, type="jpeg")
-
-    pg.click("#theme"); pg.wait_for_timeout(700)
-    check("theme toggle goes dark", pg.evaluate("document.documentElement.dataset.theme") == "dark")
+    pg.wait_for_selector("#scene.ready", timeout=60000, state="attached"); pg.wait_for_timeout(3500)
+    clip = {"x": 40, "y": 620, "width": 400, "height": 240}
+    a = pg.screenshot(clip=clip, type="png"); pg.wait_for_timeout(1500); c = pg.screenshot(clip=clip, type="png")
+    check("3D is moving on screen", a != c)
+    from PIL import Image
+    import io
+    px = list(Image.open(io.BytesIO(c)).convert("L").resize((40, 24)).getdata())
+    check("3D paints a visible world, not a flat colour", max(px) - min(px) > 40, max(px) - min(px))
+    check("default theme is dark", pg.evaluate("document.documentElement.dataset.theme") == "dark")
     pg.screenshot(path=f"{OUT}/02-home-dark.jpg", quality=80, type="jpeg")
-    pg.reload(wait_until="networkidle")
-    check("theme persists after reload", pg.evaluate("document.documentElement.dataset.theme") == "dark")
-    pg.click("#theme")
+    pg.click("#theme"); pg.wait_for_timeout(1200)
+    check("theme toggle goes light", pg.evaluate("document.documentElement.dataset.theme") == "light")
+    pg.screenshot(path=f"{OUT}/01-home-light.jpg", quality=80, type="jpeg")
+    pg.reload(wait_until="load"); pg.wait_for_load_state("networkidle"); pg.wait_for_selector("#theme")
+    check("theme persists after reload", pg.evaluate("document.documentElement.dataset.theme") == "light")
+    pg.click("#theme"); pg.wait_for_timeout(500)
 
     pg.fill("#home-search", "pen test"); pg.wait_for_timeout(400)
     pg.fill("#home-search", "penetration"); pg.wait_for_timeout(500)
@@ -57,7 +65,7 @@ with sync_playwright() as p:
     pg.wait_for_url("**/l/id/"); pg.wait_for_load_state("networkidle"); pg.wait_for_timeout(900)
     check("indonesian page loads", pg.evaluate("document.documentElement.lang") == "id")
     txt = pg.locator(".ticket .t-amount").inner_text()
-    check("indonesian prices are in rupiah", "Rp" in txt, txt)
+    check("indonesian prices are in rupiah", "Rp" in txt, ascii(txt))
     pg.screenshot(path=f"{OUT}/08-home-indonesian.jpg", quality=80, type="jpeg")
 
     pg.goto(BASE + "/services/", wait_until="networkidle"); pg.wait_for_timeout(700)
@@ -79,10 +87,26 @@ with sync_playwright() as p:
     pg.click("#chat-open"); pg.wait_for_timeout(500)
     qa = [("I need a landing page", "landing page"), ("How much is a pen test?", "penetration"), ("Can I pay with USDT?", "USDT"), ("How many revisions do I get?", "stage 1"), ("zzqq xxyy", "could not find")]
     for q, want in qa:
-        pg.fill("#chat-input", q); pg.keyboard.press("Enter"); pg.wait_for_timeout(450)
+        before = pg.locator("#chat-log .msg.bot").count()
+        pg.fill("#chat-input", q); pg.keyboard.press("Enter")
+        for _ in range(60):
+            if pg.locator("#chat-log .msg.bot").count() > before: break
+            pg.wait_for_timeout(200)
         last = pg.locator("#chat-log .msg.bot").last.inner_text()
         check(f"assistant: {q}", want.lower() in last.lower(), last[:80].replace("\n", " "))
     pg.screenshot(path=f"{OUT}/10-assistant.jpg", quality=80, type="jpeg")
+
+    for path_, q, want in [("/l/id/", "berapa harga logo", "Rp"), ("/l/ja/", "ロゴデザイン", "ロゴ")]:
+        pg = page()
+        pg.goto(BASE + path_, wait_until="networkidle")
+        pg.click("#chat-open"); pg.wait_for_timeout(300)
+        before = pg.locator("#chat-log .msg.bot").count()
+        pg.fill("#chat-input", q); pg.keyboard.press("Enter")
+        for _ in range(60):
+            if pg.locator("#chat-log .msg.bot").count() > before: break
+            pg.wait_for_timeout(200)
+        last = pg.locator("#chat-log .msg.bot").last.inner_text()
+        check(f"assistant answers in {path_}", want in last, ascii(last[:70]))
 
     pg = page()
     pg.goto(BASE + "/services/", wait_until="networkidle")

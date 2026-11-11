@@ -188,10 +188,12 @@ async function boot() {
   const browser = (navigator.language || 'en').split('-')[0];
   const want = pageLang || saved || (langs.some(l => l.code === browser) && browser !== 'en' && !saved ? browser : 'en');
   await setLang(want, { persist: !!(pageLang || saved), navigate: false });
+  $$('.cat-list a').forEach((a, i) => { const f = v => dispatchEvent(new CustomEvent('catfocus', { detail: v })); a.addEventListener('pointerenter', () => f(i)); a.addEventListener('pointerleave', () => f(-1)); a.addEventListener('focus', () => f(i)); a.addEventListener('blur', () => f(-1)); });
+  const hdr = $('header.site'); const onScroll = () => hdr?.classList.toggle('scrolled', scrollY > 40); addEventListener('scroll', onScroll, { passive: true }); onScroll();
   initSearch(); initFilter(); initTicket(); initOrder(); initCatalog();
   import('/assets/chat.js').then(m => m.init(state, { tr, money }));
   if (!reduced) import('/assets/motion.js').then(m => m.init());
   const start = () => import('/assets/scene.js').then(m => m.init({ reduced })).catch(() => {});
-  if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 1500 }); else setTimeout(start, 400);
+  start();
 }
 boot();

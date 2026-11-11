@@ -10,22 +10,29 @@ CAP = """(t) => { let c=document.getElementById('cap'); if(!c){c=document.create
 c.style.cssText='position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:99;background:#17170f;color:#f4f1e8;padding:12px 20px;border-radius:8px;font:500 20px Geist,system-ui,sans-serif;max-width:82vw;text-align:center';document.documentElement.append(c)} c.textContent=t }"""
 
 with sync_playwright() as p:
-    b = p.chromium.launch(args=["--use-gl=swiftshader", "--enable-webgl", "--ignore-gpu-blocklist"])
-    ctx = b.new_context(viewport={"width": 1280, "height": 720}, record_video_dir=tmp, record_video_size={"width": 1280, "height": 720}, locale="en-US", color_scheme="light")
+    b = p.chromium.launch(channel="chrome", headless=False, args=["--use-angle=d3d11", "--ignore-gpu-blocklist", "--window-position=-2000,0"])
+    ctx = b.new_context(viewport={"width": 1280, "height": 720}, record_video_dir=tmp, record_video_size={"width": 1280, "height": 720}, locale="en-US", color_scheme="dark")
     pg = ctx.new_page()
-    cap = lambda t: pg.evaluate(CAP, t)
+    def cap(t):
+        for _ in range(5):
+            try:
+                pg.wait_for_load_state("load"); return pg.evaluate(CAP, t)
+            except Exception:
+                pg.wait_for_timeout(500)
     wait = pg.wait_for_timeout
-    pg.goto(BASE + "/", wait_until="networkidle"); wait(1800)
-    cap("500 IT services. Each 3D tile is one real service.")
-    for x, y in [(900, 200), (980, 300), (1040, 240), (930, 380)]:
-        pg.mouse.move(x, y, steps=12); wait(800)
+    pg.goto(BASE + "/", wait_until="networkidle"); wait(6500)
+    cap("A circuit-board city: each cluster of lights is one real service")
+    for x, y in [(950, 560), (1120, 430), (300, 600), (640, 640), (1060, 620)]:
+        pg.mouse.move(x, y, steps=30); wait(850)
     cap("Search the whole list as you type")
     pg.mouse.move(300, 450); pg.click("#home-search"); pg.keyboard.type("discord", delay=90); wait(1500)
     pg.fill("#home-search", ""); pg.mouse.click(30, 400)
-    cap("Scroll: the tiles become a wall, four stacks, then one column")
-    h = pg.evaluate("document.body.scrollHeight")
-    for frac in [0.1, 0.2, 0.3, 0.38, 0.46, 0.55]:
-        pg.evaluate(f"window.scrollTo(0,{h*frac})"); wait(950)
+    cap("Scroll: the camera flies low, four towers form, the whole board, then fireflies")
+    for sel, off in [("#cats", -0.5), ("#how", -0.25), ("#rules", -0.3), ("#end", 0.0)]:
+        y0 = pg.evaluate("scrollY"); y1 = pg.evaluate(f"document.querySelector('{sel}').getBoundingClientRect().top + scrollY + innerHeight * {off}")
+        for i in range(1, 41):
+            pg.evaluate(f"window.scrollTo(0, {y0 + (y1 - y0) * i / 40})"); wait(55)
+        wait(1300)
     cap("One switch for light and dark")
     pg.evaluate("window.scrollTo(0,0)"); wait(500); pg.click("#theme"); wait(1400); pg.click("#theme"); wait(600)
     cap("More than 200 languages, each with its own currency")
@@ -50,7 +57,7 @@ with sync_playwright() as p:
     ctx.close(); b.close()
 
 out = os.path.join(MEDIA, "walkthrough.mp4")
-subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", path, "-vf", "fps=24,format=yuv420p", "-c:v", "libx264", "-crf", "30", "-preset", "slow", "-movflags", "+faststart", "-an", out], check=True)
-subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", "3", "-i", out, "-frames:v", "1", "-q:v", "4", os.path.join(MEDIA, "walkthrough.jpg")], check=True)
+subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", path, "-vf", "fps=24,format=yuv420p", "-c:v", "libx264", "-crf", "33", "-preset", "slow", "-movflags", "+faststart", "-an", out], check=True)
+subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", "9", "-i", out, "-frames:v", "1", "-q:v", "4", os.path.join(MEDIA, "walkthrough.jpg")], check=True)
 shutil.rmtree(tmp, ignore_errors=True)
 print("MB", round(os.path.getsize(out) / 1e6, 2))

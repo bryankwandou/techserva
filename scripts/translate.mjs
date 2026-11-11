@@ -23,8 +23,19 @@ export function sourceStrings() {
   return [...s];
 }
 
+// English slang that machine translation reads literally. The translator gets a clearer wording.
+const CLEARER = [
+  [/\bRoasts\b/g, 'Critiques'], [/\broasts\b/g, 'critiques'], [/\bRoast\b/g, 'Critique'], [/\broast\b/g, 'critique'],
+  [/\bpen test\b/gi, 'penetration test'], [/^Make workflow$/, 'Make.com workflow'], [/^Fractional CTO/, 'Part-time CTO'],
+  [/^Fix pack after a test$/, 'Bug fix package after a security test'], [/^Link-in-bio page$/, 'Social media profile link page'],
+];
+export const clearer = s => CLEARER.reduce((t, [a, b]) => t.replace(a, b), s);
+// Words Indonesian clients use as they are.
+const AFTER = { id: [[/halaman arahan/gi, 'landing page'], [/tes penetrasi/gi, 'pen test']] };
+const polish = (code, t) => (AFTER[code] || []).reduce((x, [a, b]) => x.replace(a, b), t);
+
 async function callApi(tl, batch) {
-  const qs = batch.map(q => 'q=' + encodeURIComponent(q)).join('&');
+  const qs = batch.map(q => 'q=' + encodeURIComponent(clearer(q))).join('&');
   const url = `https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=en&tl=${encodeURIComponent(tl)}&${qs}`;
   for (let attempt = 0; attempt < 6; attempt++) {
     try {
@@ -83,7 +94,7 @@ async function run() {
       try {
         for (const b of batches(missing)) {
           const res = await callApi(code, b);
-          b.forEach((s, i) => { cache[s] = res[i]; });
+          b.forEach((s, i) => { cache[s] = polish(code, res[i]); });
           await sleep(150);
         }
         fs.writeFileSync(file, JSON.stringify(cache));
