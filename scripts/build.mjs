@@ -6,6 +6,7 @@ import { BRAND, SITE, DOMAIN } from '../data/brand.mjs';
 import { categories, services } from '../data/services.mjs';
 import { ui, faq, general, catTerms, privacy } from '../data/copy.mjs';
 import { languagePool } from '../data/languages.mjs';
+import { countryLang } from '../data/countries.mjs';
 import { sourceStrings } from './translate.mjs';
 import { usdBase, daysFor } from '../lib/pricing.mjs';
 
@@ -40,7 +41,7 @@ console.log('languages', langs.length, 'keys', keys.length);
 export { langs };
 
 /* assets */
-for (const f of ['site.css', 'site.js', 'chat.js', 'motion.js', 'scene.js', 'rag.mjs', 'logo.svg', 'favicon.svg', 'admin.js']) copy(path.join(ROOT, 'src', f), `assets/${f}`);
+for (const f of ['site.css', 'site.js', 'chat.js', 'motion.js', 'scene.js', 'rag.mjs', 'logo.svg', 'favicon.svg', 'admin.js', 'ad.js', 'ad.css']) copy(path.join(ROOT, 'src', f), `assets/${f}`);
 copy(path.join(ROOT, 'lib/pricing.mjs'), 'assets/pricing.mjs');
 copy(nm('three/build/three.module.min.js'), 'assets/vendor/three.module.min.js');
 copy(nm('three/build/three.core.min.js'), 'assets/vendor/three.core.min.js');
@@ -50,8 +51,13 @@ copy(nm('lenis/dist/lenis.min.js'), 'assets/vendor/lenis.min.js');
 copy(nm('@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2'), 'assets/fonts/instrument-serif.woff2');
 copy(nm('@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2'), 'assets/fonts/instrument-serif-italic.woff2');
 copy(nm('@fontsource-variable/geist/files/geist-latin-wght-normal.woff2'), 'assets/fonts/geist.woff2');
-for (const f of ['ad.mp4', 'ad.jpg', 'walkthrough.mp4', 'walkthrough.jpg', 'og.jpg']) { const p = path.join(ROOT, 'src/media', f); if (fs.existsSync(p)) copy(p, `assets/${f}`); }
-const hasVideo = fs.existsSync(path.join(ROOT, 'src/media/ad.mp4'));
+for (const f of ['ad-bg-hero.jpg', 'ad-bg-end.jpg', 'ad.jpg', 'walkthrough.mp4', 'walkthrough.jpg', 'og.jpg']) { const p = path.join(ROOT, 'src/media', f); if (fs.existsSync(p)) copy(p, `assets/${f}`); }
+// The sales video is a live page. Its voice files exist only for languages that have a recorded voice.
+const voDir = path.join(ROOT, 'src/media/vo');
+const voices = fs.existsSync(voDir) ? fs.readdirSync(voDir).filter(f => f.endsWith('.mp3')).map(f => f.slice(0, -4)) : [];
+for (const c of voices) copy(path.join(voDir, `${c}.mp3`), `assets/vo/${c}.mp3`);
+fs.rmSync(path.join(OUT, 'ad'), { recursive: true, force: true });
+copy(path.join(ROOT, 'src/ad.html'), 'ad/index.html');
 const hasTour = fs.existsSync(path.join(ROOT, 'src/media/walkthrough.mp4'));
 
 const fx = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/fx.json'), 'utf8'));
@@ -62,6 +68,17 @@ write('assets/langs.json', JSON.stringify(langs));
 const catById = Object.fromEntries(categories.map(c => [c.id, c]));
 const K = s => { if (!keyIndex.has(s)) throw new Error('missing key: ' + s); return keyIndex.get(s); };
 write('assets/services.json', JSON.stringify(services.map(s => ({ name: s.name, slug: s.slug, code: s.code, idr: s.idr, cat: catById[s.cat].name, k: K(s.name), ck: K(catById[s.cat].name) }))));
+{
+  const names = ['ad_q', 'ad_r1', 'ad_r2', 'ad_r3', 'ad_p1', 'ad_p2', 'ad_p3', 'ad_p4', 'ad_a', 'ad_count', 'ad_one', 'ad_inc', 'ad_s2', 'ad_s3', 'ad_s4', 'ad_f1', 'ad_f2', 'ad_f3', 'ad_t1', 'ad_t2', 'ad_t3', 'ad_end', 'ad_sound', 'ad_mute',
+    'hero_title', 'hero_cta', 'cats_title', 'from', 'how_title', 'how1_t', 'how2_t', 'how3_t', 'how4_t'];
+  const pickT = ['TS-001', 'TS-198', 'TS-169', 'TS-303'].map(code => services.find(s => s.code === code)).filter(Boolean);
+  write('assets/ad-ui.json', JSON.stringify({
+    host: DOMAIN, voices,
+    t: Object.fromEntries(names.map(k => [k, [K(ui[k]), ui[k]]])),
+    cats: categories.map(c => [K(c.name), c.name, Math.min(...services.filter(s => s.cat === c.id).map(s => s.idr))]),
+    tickets: pickT.map(s => [s.code, K(catById[s.cat].name), catById[s.cat].name, K(s.name), s.name, s.idr]),
+  }));
+}
 write('assets/chat-ui.json', JSON.stringify(Object.fromEntries(['chat_none', 'chat_starts', 'chat_sources', 'chat_try', 'chat_hello', 'nav_services', 'svc_terms'].map(k => [k, [K(ui[k]), ui[k]]]))));
 const kb = [
   ...faq.map(([q, a]) => ({ type: 'faq', title: q, text: a, url: '/#faq', tk: K(q), xk: K(a) })),
@@ -124,13 +141,13 @@ ${head}
 <p class="note">&copy; 2026 ${BRAND}. ${T(ui.footer_rights)}</p>
 </div></footer>
 <button class="chat-open" id="chat-open" type="button">${T(ui.chat_open)}</button>
-<aside class="chat" id="chat" hidden aria-label="${esc(v(ui.chat_title))}">
+<aside class="chat" id="chat" data-lenis-prevent hidden aria-label="${esc(v(ui.chat_title))}">
 <div class="chat-head">${T(ui.chat_title)}<button class="tool" id="chat-close" type="button">${T(ui.chat_close)}</button></div>
 <div class="chat-log" id="chat-log" aria-live="polite"></div>
 <div class="chips">${[ui.chip_1, ui.chip_2, ui.chip_3, ui.chip_4].map(c => `<button type="button" data-k="${K(c)}">${esc(v(c))}</button>`).join('')}</div>
 <form id="chat-form"><input id="chat-input" autocomplete="off" maxlength="300" data-kp="${K(ui.chat_placeholder)}" placeholder="${esc(v(ui.chat_placeholder))}" aria-label="${esc(v(ui.chat_placeholder))}"><button type="submit">${T(ui.chat_send)}</button></form>
 </aside>
-<dialog class="langs" id="langs" aria-label="${esc(v(ui.lang_label))}">
+<dialog class="langs" id="langs" data-lenis-prevent aria-label="${esc(v(ui.lang_label))}">
 <div class="langs-head"><input class="field" id="langs-q" data-kp="${K(ui.lang_search)}" placeholder="${esc(v(ui.lang_search))}" aria-label="${esc(v(ui.lang_search))}"><button class="tool" id="langs-close" type="button">${T(ui.chat_close)}</button></div>
 <ul class="langs-list" id="langs-list"></ul>
 </dialog>
@@ -149,7 +166,7 @@ function homeBody(lang) {
 <p class="kicker" data-k="${K(ui.hero_kicker)}">${esc(v(ui.hero_kicker))}</p>
 <h1>${esc(t1)}${t2 ? `, <em>${esc(t2.trim())}</em>` : ''}</h1>
 <p class="lead" data-k="${K(ui.hero_lead)}">${esc(v(ui.hero_lead))}</p>
-<div class="search-box"><input id="home-search" type="search" autocomplete="off" data-kp="${K(ui.search_placeholder)}" placeholder="${esc(v(ui.search_placeholder))}" aria-label="${esc(v(ui.search_placeholder))}" data-none="${esc(v(ui.search_none))}"><div class="search-results" id="home-results" hidden></div></div>
+<div class="search-box"><input id="home-search" type="search" autocomplete="off" data-kp="${K(ui.search_placeholder)}" placeholder="${esc(v(ui.search_placeholder))}" aria-label="${esc(v(ui.search_placeholder))}" data-none="${esc(v(ui.search_none))}"><div class="search-results" id="home-results" data-lenis-prevent hidden></div></div>
 <div class="actions"><a class="btn primary" href="/services/">${T(ui.hero_cta)}</a><button class="btn" type="button" data-open-chat>${T(ui.hero_cta2)}</button></div>
 <a class="down" href="#cats" aria-label="${esc(v(ui.cats_title))}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a>
 </div>
@@ -186,7 +203,7 @@ ${[[ui.how1_t, ui.how1_d], [ui.how2_t, ui.how2_d], [ui.how3_t, ui.how3_d], [ui.h
 
 <section class="block solid" id="demo"><div class="wrap two">
 <div><h2 data-rise>${T(ui.demo_title)}</h2><p class="lead" data-rise style="margin-top:14px">${T(ui.demo_lead)}</p>${hasTour ? `<p data-rise style="margin-top:18px"><a href="/assets/walkthrough.mp4">${T(ui.demo_tour)}</a></p>` : ''}</div>
-<div class="video-frame" data-rise>${hasVideo ? `<video src="/assets/ad.mp4" poster="/assets/ad.jpg" autoplay muted loop playsinline controls preload="metadata"></video>` : ''}</div>
+<div class="video-frame" data-rise><iframe src="/ad/${lang === 'en' ? '' : `?l=${lang}`}" title="${esc(v(ui.demo_title))}" loading="lazy" allow="autoplay"></iframe></div>
 </div></section>
 
 <section class="block" id="book"><div class="wrap book">
@@ -326,7 +343,7 @@ write('admin/index.html', `<!doctype html><html lang="en" data-theme="light"><he
 /* security headers. Hashes allow only the two known inline theme scripts. */
 const hash = s => `'sha256-${crypto.createHash('sha256').update(s).digest('base64')}'`;
 const inlineScripts = [...new Set([...fs.readFileSync(path.join(OUT, 'index.html'), 'utf8').matchAll(/<script>([\s\S]*?)<\/script>/g), ...fs.readFileSync(path.join(OUT, 'admin/index.html'), 'utf8').matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]))];
-const csp = `default-src 'self'; script-src 'self' ${inlineScripts.map(hash).join(' ')}; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`;
+const csp = `default-src 'self'; script-src 'self' ${inlineScripts.map(hash).join(' ')}; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'`;
 fs.writeFileSync(path.join(ROOT, 'vercel.json'), JSON.stringify({
   outputDirectory: 'public', buildCommand: null, framework: null, cleanUrls: false,
   headers: [
@@ -343,6 +360,36 @@ fs.writeFileSync(path.join(ROOT, 'vercel.json'), JSON.stringify({
     { source: '/admin/(.*)', headers: [{ key: 'X-Robots-Tag', value: 'noindex' }] },
   ],
 }, null, 2));
+
+/* language by IP. Vercel runs this before the page is served. A manual choice is kept only while the visitor stays in the same country,
+   so a visitor who moves (or turns on a VPN) gets the language of the country their IP is in. */
+const geo = Object.fromEntries(Object.entries(countryLang).filter(([, l]) => langs.some(x => x.code === l)));
+console.log('countries mapped', Object.keys(geo).length, 'dropped', Object.entries(countryLang).filter(([c]) => !geo[c]).map(p => p.join(':')).join(' ') || 'none');
+fs.writeFileSync(path.join(ROOT, 'middleware.js'), `// Generated by scripts/build.mjs from data/countries.mjs. Do not edit.
+const MAP = ${JSON.stringify(geo)};
+export const config = { matcher: ['/', '/services/:path*', '/terms/:path*', '/catalog', '/catalog/', '/privacy', '/privacy/', '/l/:path*'] };
+export default function middleware(request) {
+  const url = new URL(request.url);
+  const cc = (request.headers.get('x-vercel-ip-country') || '').toUpperCase();
+  const byIp = MAP[cc] || 'en';
+  const headers = new Headers();
+  const cookie = (request.headers.get('cookie') || '') + ';';
+  if (cc && !cookie.includes('geo=' + cc + ';')) {
+    headers.append('set-cookie', 'geo=' + cc + '; Path=/; Max-Age=86400; SameSite=Lax');
+    headers.append('set-cookie', 'geolang=' + byIp + '; Path=/; Max-Age=86400; SameSite=Lax');
+  }
+  if (url.pathname === '/' && cc && !/bot|crawl|spider|slurp|preview|lighthouse/i.test(request.headers.get('user-agent') || '')) {
+    const m = /(?:^|; )lang=([^.;]+)\.([A-Z]{2})/.exec(cookie);
+    const want = m && m[2] === cc ? decodeURIComponent(m[1]) : byIp;
+    if (want !== 'en' && /^[A-Za-z-]{2,12}$/.test(want)) {
+      headers.set('location', '/l/' + want + '/'); headers.set('cache-control', 'private, no-store'); headers.set('vary', 'cookie');
+      return new Response(null, { status: 307, headers });
+    }
+  }
+  headers.set('x-middleware-next', '1');
+  return new Response(null, { headers });
+}
+`);
 
 /* seo */
 const urls = ['/', '/services/', '/terms/', '/catalog/', '/privacy/', ...services.flatMap(s => [`/services/${s.slug}/`, `/terms/${s.slug}/`]), ...langs.filter(l => l.code !== 'en').map(l => `/l/${l.code}/`)];

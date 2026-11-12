@@ -10,6 +10,7 @@ const store = {
   get: k => { try { return localStorage.getItem(k); } catch { return null; } },
   set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } },
 };
+const cookie = k => (document.cookie.match(new RegExp('(?:^|; )' + k + '=([^;]*)')) || [])[1] || '';
 export const tr = (k, fallback) => (state.shard && state.shard[k]) || fallback;
 export const money = idr => formatPrice(priceIn(idr, state.currency, state.rates), state.lang.startsWith('pa-') ? 'pa' : state.lang);
 
@@ -37,6 +38,8 @@ function applyShard() {
 async function setLang(code, { persist = true, navigate = true } = {}) {
   const l = state.langs.find(x => x.code === code) || { code: 'en', currency: 'USD' };
   if (persist) store.set('lang', l.code);
+  // A choice made by hand is remembered together with the country it was made in. See middleware.js.
+  if (persist && navigate) document.cookie = `lang=${encodeURIComponent(l.code)}.${cookie('geo') || 'ZZ'}; Path=/; Max-Age=31536000; SameSite=Lax`;
   if (navigate && root.dataset.home === '1') {
     location.href = l.code === 'en' ? '/' : `/l/${l.code}/`;
     return;
@@ -186,11 +189,17 @@ async function boot() {
   buildPicker();
   const saved = store.get('lang');
   const browser = (navigator.language || 'en').split('-')[0];
-  const want = pageLang || saved || (langs.some(l => l.code === browser) && browser !== 'en' && !saved ? browser : 'en');
+  // On Vercel the language follows the country of the visitor's IP, unless they picked one by hand while in that same country.
+  const geo = cookie('geo'), [handLang, handGeo] = decodeURIComponent(cookie('lang')).split('.');
+  const byIp = geo ? (handLang && handGeo === geo ? handLang : cookie('geolang')) : '';
+  const want = pageLang || (byIp && langs.some(l => l.code === byIp) ? byIp : geo ? 'en' : saved || (langs.some(l => l.code === browser) ? browser : 'en'));
   await setLang(want, { persist: !!(pageLang || saved), navigate: false });
   $$('.cat-list a').forEach((a, i) => { const f = v => dispatchEvent(new CustomEvent('catfocus', { detail: v })); a.addEventListener('pointerenter', () => f(i)); a.addEventListener('pointerleave', () => f(-1)); a.addEventListener('focus', () => f(i)); a.addEventListener('blur', () => f(-1)); });
   const hdr = $('header.site'); const onScroll = () => hdr?.classList.toggle('scrolled', scrollY > 40); addEventListener('scroll', onScroll, { passive: true }); onScroll();
   initSearch(); initFilter(); initTicket(); initOrder(); initCatalog();
+  // The floating assistant button would sit on top of the hero's price ticket, and the hero has its own assistant button.
+  const hero = $('.hero'), fab = $('#chat-open');
+  if (hero && fab && 'IntersectionObserver' in window) new IntersectionObserver(([e]) => fab.classList.toggle('away', e.isIntersecting), { rootMargin: '0px 0px -120px 0px' }).observe(hero);
   import('/assets/chat.js').then(m => m.init(state, { tr, money }));
   if (!reduced) import('/assets/motion.js').then(m => m.init());
   const start = () => import('/assets/scene.js').then(m => m.init({ reduced })).catch(() => {});

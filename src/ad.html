@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Techserva, the sales video</title>
+<link rel="icon" href="/assets/favicon.svg">
+<link rel="stylesheet" href="/assets/ad.css">
+</head>
+<body>
+<div id="stage">
+<div id="mark"><svg viewBox="0 0 64 64"><path fill="#f1eee3" d="M12 8h40a4 4 0 0 1 4 4v14.5a5.5 5.5 0 0 0 0 11V52a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V37.5a5.5 5.5 0 0 0 0-11V12a4 4 0 0 1 4-4z"/><path fill="#14140e" d="M18 18h28v8H18z"/><path fill="#ff6a2e" d="M27.5 26h9v21h-9z"/></svg>Techserva</div>
+<div id="bar"></div>
+
+<section class="scene" id="s1"><div class="in">
+  <div class="ask"><span id="typed"></span><i></i></div>
+  <div class="replies"><div class="reply" data-t="ad_r1"></div><div class="reply" data-t="ad_r2"></div><div class="reply" data-t="ad_r3"></div></div>
+</div></section>
+
+<section class="scene" id="s2"><div class="in">
+  <h1><span data-t="ad_p1"></span><span data-t="ad_p2"></span><span><em data-t="ad_p3"></em></span></h1>
+  <p data-t="ad_p4"></p>
+</div></section>
+
+<section class="scene" id="s3"><div class="bg" style="background-image:url(/assets/ad-bg-hero.jpg)"></div><div class="shade"></div><div class="in">
+  <div class="logo"><svg viewBox="0 0 64 64"><path fill="#f1eee3" d="M12 8h40a4 4 0 0 1 4 4v14.5a5.5 5.5 0 0 0 0 11V52a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V37.5a5.5 5.5 0 0 0 0-11V12a4 4 0 0 1 4-4z"/><path fill="#14140e" d="M18 18h28v8H18z"/><path fill="#ff6a2e" d="M27.5 26h9v21h-9z"/></svg></div>
+  <h1 id="h3"></h1>
+  <p data-t="ad_a"></p>
+</div></section>
+
+<section class="scene" id="s4"><div class="cols">
+  <div>
+    <div class="head"><h2 data-t="cats_title"></h2><span class="mono" data-t="ad_count"></span></div>
+    <div class="win"><div id="rows"></div></div>
+  </div>
+  <aside><span class="mono" data-t="ad_one"></span>
+    <div class="ticket"><div class="top"><span id="tk-code"></span><span id="tk-cat"></span></div><div class="name" id="tk-name"></div><div class="price"><span data-t="from"></span> <b id="tk-price"></b></div><div class="inc" data-t="ad_inc"></div></div>
+  </aside>
+</div></section>
+
+<section class="scene" id="s5"><div class="in">
+  <h2 data-t="how_title"></h2>
+  <div class="rail"></div>
+  <div class="steps">
+    <div class="step"><span class="n">01</span><h3 data-t="how1_t"></h3><p data-t="ad_inc"></p></div>
+    <div class="step"><span class="n">02</span><h3 data-t="how2_t"></h3><p data-t="ad_s2"></p></div>
+    <div class="step"><span class="n">03</span><h3 data-t="how3_t"></h3><p data-t="ad_s3"></p></div>
+    <div class="step"><span class="n">04</span><h3 data-t="how4_t"></h3><p data-t="ad_s4"></p></div>
+  </div>
+</div></section>
+
+<section class="scene" id="s6"><div class="in">
+  <div class="facts">
+    <div class="fact"><b data-count="500">0</b><span data-t="ad_f1"></span></div>
+    <div class="fact"><b data-count="500">0</b><span data-t="ad_f2"></span></div>
+    <div class="fact"><b data-count="200" data-suffix="+">0</b><span data-t="ad_f3"></span></div>
+  </div>
+  <div class="terms"><span data-t="ad_t1"></span><span data-t="ad_t2"></span><span data-t="ad_t3"></span></div>
+</div></section>
+
+<section class="scene" id="s7"><div class="bg" style="background-image:url(/assets/ad-bg-end.jpg)"></div><div class="shade"></div><div class="in">
+  <h1 id="h7" data-t="ad_end"></h1>
+  <div class="cta" id="cta" data-t="hero_cta"></div>
+  <div class="url" id="url"></div>
+</div></section>
+
+<svg id="cur" viewBox="0 0 24 24"><path d="M4 2l15 9-7 1.6L8.6 20z" fill="#f1eee3" stroke="#14140e" stroke-width="1.4" stroke-linejoin="round"/></svg>
+</div>
+<div id="pause"><svg viewBox="0 0 24 24" fill="#f1eee3" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></div>
+<button id="snd" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span data-t="ad_sound"></span></button>
+<script src="/assets/vendor/gsap.min.js" defer></script>
+<script type="module" src="/assets/ad.js"></script>
+</body>
+</html>

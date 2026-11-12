@@ -90,7 +90,7 @@ async function run() {
       const code = ok[idx++];
       const file = path.join(CACHE, code + '.json');
       const cache = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {};
-      const missing = src.filter(s => !(s in cache));
+      const missing = src.filter(s => !cache[s]);
       try {
         for (const b of batches(missing)) {
           const res = await callApi(code, b);
