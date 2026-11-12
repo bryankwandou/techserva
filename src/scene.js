@@ -206,6 +206,44 @@ void main(){ vec2 e=vUv-.5; float ed=dot(e,e); vec2 ca=e*ed*.022;
   c=pow(clamp(c,0.,1.),vec3(1./2.2)); c+=(n(vUv*vec2(1731.,947.)+fract(uTime)*91.)-.5)*(uDark>.5?.028:.016);
   gl_FragColor=vec4(c,1.); }`;
 
+
+// Bokeh dust: thousands of soft lights in camera space. They drift toward the viewer, lean away
+// from the pointer and stretch into a warp when the visitor jumps down the page.
+const DUST_VS = `uniform float uTime,uTravel,uWarp,uDark,uFocusD; uniform vec2 uLean; uniform float uPxH;
+attribute vec4 aDust; attribute vec3 aColor; varying vec3 vC; varying float vA; varying float vSoft;
+void main(){
+  float s=aDust.w; float z=-2.-mod(aDust.z+uTravel*(.6+s*.8),70.);
+  vec3 v=vec3(aDust.x*(-z)*.62,aDust.y*(-z)*.4,z);
+  v.xy+=uLean*(9./max(-z,1.))*(1.-uWarp*.6);
+  v.xy+=vec2(sin(uTime*.21+s*40.),cos(uTime*.17+s*30.))*(.25+s*.5);
+  gl_Position=projectionMatrix*vec4(v,1.);
+  float d=abs(-z-uFocusD); float coc=clamp(d/18.,0.,1.);
+  float base=(1.2+s*2.6)*uPxH/(-z);
+  gl_PointSize=clamp(base*(1.+coc*3.5)+uWarp*14.*(1.-(-z)/72.),1.5,64.);
+  float fade=smoothstep(70.,52.,-z)*smoothstep(1.,4.,-z);
+  vA=fade*(.25+.75*pow(.5+.5*sin(uTime*(.6+s)+s*90.),3.))/(1.+coc*coc*3.)*(uDark>.5?1.:.55)*(1.+uWarp*2.);
+  vSoft=coc; vC=aColor;
+}`;
+const DUST_FS = `uniform float uDark,uWarp; varying vec3 vC; varying float vA; varying float vSoft;
+void main(){ vec2 q=gl_PointCoord-.5; float r=length(q)*2.; if(r>1.) discard;
+  float disc=mix(1.-smoothstep(.15,.9,r), smoothstep(1.,.82,r)*(.55+.45*smoothstep(.5,.95,r)), vSoft);
+  vec3 c=vC*(uDark>.5?1.3:.8)*(1.+uWarp*2.2);
+  gl_FragColor=vec4(c*disc*vA,uDark>.5?disc*vA:disc*vA*.9); }`;
+
+function buildDust(count) {
+  const dust = new Float32Array(count * 4); const col = new Float32Array(count * 3); const c = new THREE.Color();
+  for (let i = 0; i < count; i++) {
+    dust.set([(rnd() - 0.5) * 2, (rnd() - 0.5) * 2, rnd() * 70, rnd()], i * 4);
+    c.set(PALETTE[rnd() < 0.45 ? 1 : rnd() < 0.5 ? 0 : Math.floor(rnd() * PALETTE.length)]).offsetHSL(0, 0, (rnd() - 0.5) * 0.1);
+    col.set([c.r, c.g, c.b], i * 3);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+  g.setAttribute('aDust', new THREE.BufferAttribute(dust, 4));
+  g.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
+  return g;
+}
+
 // Scroll keyframes: position, look-at, focus range. Hero, flight, towers, map, fireflies.
 const KEYS = wide => [
   { p: [0, 21, 21], l: [0, 0, -3], r: 7 },
@@ -241,6 +279,13 @@ export function init({ reduced }) {
   blocks.frustumCulled = false; world.add(blocks);
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200, 150, 150), new THREE.ShaderMaterial({ uniforms: U, vertexShader: GROUND_VS, fragmentShader: GROUND_FS, side: THREE.DoubleSide }));
   ground.frustumCulled = false; world.add(ground);
+  const DU = { uTime: U.uTime, uDark: U.uDark, uTravel: { value: 0 }, uWarp: { value: 0 }, uLean: { value: new THREE.Vector2() }, uPxH: { value: 800 }, uFocusD: { value: 20 } };
+  const dustMat = new THREE.ShaderMaterial({ uniforms: DU, vertexShader: DUST_VS, fragmentShader: DUST_FS, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
+  const dust = new THREE.Points(buildDust(small ? 1000 : home ? 2400 : 1400), dustMat); dust.frustumCulled = false; dust.renderOrder = 9; world.add(dust);
+  const dustPaint = dark => { dustMat.blending = dark ? THREE.AdditiveBlending : THREE.NormalBlending; dustMat.needsUpdate = true; };
+  // A jump down the page plays a warp: the dust streaks, the lens widens, then everything settles.
+  let warpAt = -1e9;
+  addEventListener('dive', () => { warpAt = performance.now(); });
 
   // Render targets
   const HDR = { type: THREE.HalfFloatType, format: THREE.RGBAFormat, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: false };
@@ -271,6 +316,7 @@ export function init({ reduced }) {
     const W = Math.max(2, Math.round(w * pr)); const H = Math.max(2, Math.round(h * pr));
     renderer.setPixelRatio(1); renderer.setSize(W, H, false);
     camera.aspect = w / h; camera.updateProjectionMatrix();
+    DU.uPxH.value = H * 1.1;
     sceneRT.setSize(W, H); cocRT.setSize(W, H); dofRT.setSize(W, H);
     dofM.uniforms.uPx.value.set(1 / W, 1 / H); dofM.uniforms.uMax.value = Math.min(W, H) * 0.017; dofM.uniforms.uTaps.value = small ? Math.min(14, taps) : taps;
     cocM.uniforms.uAsp.value = w / h;
@@ -287,6 +333,7 @@ export function init({ reduced }) {
     finalM.uniforms.uBloom.value = dark ? 0.85 : 0.1;
     downM.uniforms.uThresh.value = dark ? 0.9 : 1.6;
     finalM.uniforms.uVig.value = dark ? 0.62 : 0;
+    dustPaint(dark);
     drawOnce();
   }
 
@@ -371,6 +418,10 @@ export function init({ reduced }) {
     U.uPointer.value.copy(light);
 
     cocM.uniforms.uFocusD.value = smoothEye.distanceTo(smoothLook);
+    const wt = (now - warpAt) / 1000; const warp = reduced ? 0 : wt < 0 ? 0 : wt < 0.35 ? smooth(0, 0.35, wt) : 1 - smooth(0.9, 2.2, wt);
+    DU.uWarp.value = warp; DU.uTravel.value += dt * (0.9 + warp * 55); DU.uFocusD.value = 14;
+    DU.uLean.value.set(-pointer.x, -pointer.y);
+    const fov = 34 + warp * 22; if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
     cocM.uniforms.uFlat.value = smoothRange * 0.75; cocM.uniforms.uRange.value = smoothRange * 1.5;
     cocM.uniforms.uEdge.value = 1 - smooth(1.5, 3, p) * 0.45;
     const covered = home ? lerp(1, 0.86, smooth(0.4, 1.2, p)) : (root.dataset.theme === 'dark' ? 0.5 : 0.62);

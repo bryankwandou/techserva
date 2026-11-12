@@ -32,6 +32,9 @@ for (const l of languagePool) {
   const f = path.join(ROOT, 'data/i18n', `${l.code}.json`);
   if (!fs.existsSync(f)) continue;
   const cache = JSON.parse(fs.readFileSync(f, 'utf8'));
+  // Hand-written corrections win over the machine translation.
+  const fixF = path.join(ROOT, 'data/i18n-fix', `${l.code}.json`);
+  if (fs.existsSync(fixF)) Object.assign(cache, JSON.parse(fs.readFileSync(fixF, 'utf8')));
   const coverage = keys.filter(k => cache[k]).length / keys.length;
   if (coverage < 0.98) { console.log('skip, low coverage', l.code, coverage.toFixed(2)); continue; }
   trans[l.code] = cache;
@@ -170,7 +173,6 @@ function homeBody(lang) {
 <div class="actions"><a class="btn primary" href="/services/">${T(ui.hero_cta)}</a><button class="btn" type="button" data-open-chat>${T(ui.hero_cta2)}</button></div>
 <a class="down" href="#cats" aria-label="${esc(v(ui.cats_title))}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a>
 </div>
-<p class="hint">${T(ui.scene_hint)}</p>
 <article class="ticket" id="ticket" aria-live="off">
 <div class="code"><span class="t-code">${services[0].code}</span><span class="t-cat">${esc(v(categories[0].name))}</span></div>
 <h3 class="t-name">${esc(v(services[0].name))}</h3>
@@ -202,7 +204,7 @@ ${[[ui.how1_t, ui.how1_d], [ui.how2_t, ui.how2_d], [ui.how3_t, ui.how3_d], [ui.h
 </div></section>
 
 <section class="block solid" id="demo"><div class="wrap two">
-<div><h2 data-rise>${T(ui.demo_title)}</h2><p class="lead" data-rise style="margin-top:14px">${T(ui.demo_lead)}</p>${hasTour ? `<p data-rise style="margin-top:18px"><a href="/assets/walkthrough.mp4">${T(ui.demo_tour)}</a></p>` : ''}</div>
+<div><h2 data-rise>${T(ui.demo_title)}</h2><p class="lead" data-rise style="margin-top:14px">${T(ui.demo_lead)}</p></div>
 <div class="video-frame" data-rise><iframe src="/ad/${lang === 'en' ? '' : `?l=${lang}`}" title="${esc(v(ui.demo_title))}" loading="lazy" allow="autoplay"></iframe></div>
 </div></section>
 

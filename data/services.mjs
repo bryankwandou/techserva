@@ -2,7 +2,7 @@ import { CODE_PREFIX } from './brand.mjs';
 // 20 categories x 25 services. Price = entry price in thousand IDR for Indonesia.
 // Other markets derive from it in lib/pricing.mjs.
 const raw = {
- web: ['Websites and landing pages', 'Pages that explain a business and bring in enquiries.', `
+ web: ['Websites and landing pages', 'Pages that explain your business and bring in customer enquiries.', `
 One-page landing page|500
 Company landing page|750
 Product launch page|900
@@ -28,7 +28,7 @@ Website migration to a new platform|2000
 Website speed repair|800
 Mobile layout repair|300
 Technical SEO setup|1500`],
- fullstack: ['Full-stack web apps', 'Database, login, server and interface delivered as one working product.', `
+ fullstack: ['Full-stack web applications', 'Database, login, server and interface delivered as one working product.', `
 SaaS starter with login and billing page|12000
 Internal admin dashboard|15000
 Customer portal|12000
@@ -54,7 +54,7 @@ Role and permission system|6000
 Next.js full-stack MVP|15000
 Crypto payment checkout app|12000
 Prototype to production rebuild|25000`],
- frontend: ['Frontend only', 'Interface work on top of your backend or API. No server work included.', `
+ frontend: ['Frontend development', 'Interface work on top of your backend or API. No server work included.', `
 Figma to HTML and CSS|1000
 Figma to React|2500
 Figma to Next.js|3000
@@ -132,7 +132,7 @@ Chinese localization|1000
 Japanese localization|1000
 Spanish localization|800
 Localized legal page set|1500`],
- design: ['Design and polish', 'Interface design, redesigns and the finishing work that makes a product feel considered.', `
+ design: ['Design and polish', 'Interface design, redesigns and finishing work that make a product look professional.', `
 Landing page design in Figma|800
 Website redesign, up to 5 pages|2000
 App interface design, 10 screens|3000
@@ -158,7 +158,7 @@ Social media template set|600
 Presentation template|800
 Email newsletter design|300
 Empty and error states design|500`],
- motion: ['3D and web animation', 'Motion that explains the product. Three.js, GSAP, Lottie and scroll work.', `
+ motion: ['3D and web animation', 'Animation that explains your product, built with Three.js, GSAP, Lottie and scroll effects.', `
 3D hero scene with Three.js|3000
 3D product viewer|4000
 3D product configurator|10000
@@ -210,7 +210,7 @@ Crash and bug repair|1000
 App speed repair|1500
 Framework upgrade|2000
 App analytics setup|600`],
- game: ['Games', 'Browser, mobile and Telegram games with a playable build at every milestone.', `
+ game: ['Game development', 'Browser, mobile and Telegram games with a playable build at every milestone.', `
 HTML5 arcade game|3000
 Puzzle game for the browser|3500
 Word game|3000
@@ -340,7 +340,7 @@ A/B test analysis|1000
 Survey analysis|800
 Monthly KPI report|1000
 Investor metrics sheet|1200`],
- security: ['Cybersecurity', 'Authorized testing and hardening. Nothing runs without your written permission.', `
+ security: ['Cybersecurity', 'Security testing and hardening of your systems, only with your written permission.', `
 Website security check|1000
 Web app penetration test|8000
 API penetration test|7000
@@ -366,7 +366,7 @@ Bot and abuse protection|1200
 Privacy data map|1500
 Security monitoring setup|3000
 Fix pack after a test|3000`],
- audit: ['Audits', 'A written verdict with evidence, severity and the order to fix things.', `
+ audit: ['Audits', 'A written report with evidence, severity levels and the order in which to fix problems.', `
 Code audit, small repo|2000
 Code audit, medium repo|5000
 Architecture review|3000
@@ -444,7 +444,7 @@ Launch-day checklist run|500
 Bug report cleanup|400
 Test plan writing|800
 QA in CI setup|1000`],
- roast: ['Roasts and reviews', 'Blunt written feedback from someone with no reason to flatter you.', `
+ roast: ['Product reviews and critiques', 'Honest written feedback on your product, website or pitch.', `
 Idea roast|150
 Startup idea validation|500
 Design roast, one page|150
@@ -496,7 +496,7 @@ User manual|800
 Blog article pack, 5 articles|500
 Launch post pack|300
 App store text and images|500`],
- care: ['Maintenance, training and consulting', 'Ongoing help after launch, and teaching your team to run things themselves.', `
+ care: ['Maintenance, training and consulting', 'Ongoing support after launch, plus training so your team can run things on its own.', `
 Website maintenance, 1 month|300
 Website maintenance, 12 months|3000
 App maintenance, 1 month|1000
