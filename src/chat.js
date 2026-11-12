@@ -14,9 +14,11 @@ async function ensureIndex(state, tr) {
 }
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
 
-function answer(query) {
+// `hint` is the English wording of a suggestion chip: the chip shows the visitor's language,
+// and the hint keeps the search exact even when the translation drifts.
+function answer(query, hint = '') {
   const { tr, money, ui } = ctx;
-  const hits = search(index, query, 6);
+  const hits = search(index, hint || query, 6);
   const box = el('div', 'msg bot');
   const top = hits[0];
   if (!top || top.score < 2.2 || top.coverage < 0.34) {
@@ -55,17 +57,17 @@ export async function init(state, { tr, money }) {
     input.focus({ preventScroll: true });
     await ensureIndex(state, tr);
   };
-  const ask = async q => {
+  const ask = async (q, hint) => {
     log.append(el('div', 'msg me', q));
     await ensureIndex(state, tr);
-    log.append(answer(q));
+    log.append(answer(q, hint));
     log.scrollTop = log.scrollHeight;
   };
   opener.addEventListener('click', openIt);
   document.querySelectorAll('[data-open-chat]').forEach(b => b.addEventListener('click', openIt));
   $('#chat-close').addEventListener('click', () => { panel.hidden = true; opener.hidden = false; opener.focus(); });
   form.addEventListener('submit', e => { e.preventDefault(); const q = input.value.trim().slice(0, 300); if (!q) return; input.value = ''; ask(q); });
-  document.querySelectorAll('#chat .chips button').forEach(b => b.addEventListener('click', () => ask(b.textContent)));
+  document.querySelectorAll('#chat .chips button').forEach(b => b.addEventListener('click', () => ask(b.textContent, b.dataset.en)));
   addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) $('#chat-close').click(); });
   addEventListener('langchange', () => { index = null; });
 }

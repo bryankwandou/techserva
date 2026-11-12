@@ -147,7 +147,7 @@ ${head}
 <aside class="chat" id="chat" data-lenis-prevent hidden aria-label="${esc(v(ui.chat_title))}">
 <div class="chat-head">${T(ui.chat_title)}<button class="tool" id="chat-close" type="button">${T(ui.chat_close)}</button></div>
 <div class="chat-log" id="chat-log" aria-live="polite"></div>
-<div class="chips">${[ui.chip_1, ui.chip_2, ui.chip_3, ui.chip_4].map(c => `<button type="button" data-k="${K(c)}">${esc(v(c))}</button>`).join('')}</div>
+<div class="chips">${[ui.chip_1, ui.chip_2, ui.chip_3, ui.chip_4].map(c => `<button type="button" data-k="${K(c)}" data-en="${esc(c)}">${esc(v(c))}</button>`).join('')}</div>
 <form id="chat-form"><input id="chat-input" autocomplete="off" maxlength="300" data-kp="${K(ui.chat_placeholder)}" placeholder="${esc(v(ui.chat_placeholder))}" aria-label="${esc(v(ui.chat_placeholder))}"><button type="submit">${T(ui.chat_send)}</button></form>
 </aside>
 <dialog class="langs" id="langs" data-lenis-prevent aria-label="${esc(v(ui.lang_label))}">
