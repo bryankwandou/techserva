@@ -52,7 +52,6 @@ async function setLang(code, { persist = true, navigate = true } = {}) {
     const r = await fetch(`/i18n/${l.code}.json`);
     state.shard = r.ok ? await r.json() : null;
     applyShard();
-    const n = $('#mt-note'); if (n) n.hidden = false;
   }
   applyPrices();
   dispatchEvent(new Event('langchange'));
@@ -227,7 +226,16 @@ function initCatalog() {
   sel.addEventListener('change', sync); sync();
 }
 
+// Visit counter: one call per browser tab session, daily totals only (api/visit.js).
+function countVisit() {
+  try {
+    if (sessionStorage.getItem('counted')) return; sessionStorage.setItem('counted', '1');
+    const from = new URLSearchParams(location.search).get('from') || '';
+    navigator.sendBeacon?.('/api/visit', new Blob([JSON.stringify({ from })], { type: 'application/json' }));
+  } catch { /* storage blocked */ }
+}
 async function boot() {
+  countVisit();
   const [langs, rates] = await Promise.all([fetch('/assets/langs.json').then(r => r.json()), fetch('/assets/rates.json').then(r => r.json())]);
   state.langs = langs; state.rates = rates;
   buildPicker();

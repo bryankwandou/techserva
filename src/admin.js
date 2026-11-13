@@ -138,7 +138,7 @@ async function start() {
   if (location.hash && !location.hash.startsWith('#reset')) history.replaceState(null, '', '/admin/');
   await openDB();
   const panel = h('div', { id: 'panel' });
-  const tabs = [['Templates', templates], ['Client loop', loop], ['Permintaan klien', leads], ...(meta.me.role === 'master' ? [['Akun', accounts]] : []), ['Akun saya', mine]];
+  const tabs = [['Templates', templates], ['Client loop', loop], ['Permintaan klien', leads], ['Pengunjung', visits], ...(meta.me.role === 'master' ? [['Akun', accounts]] : []), ['Akun saya', mine]];
   const bar = h('div', { class: 'tabs', role: 'tablist' }, tabs.map(([name, fn], i) => h('button', { role: 'tab', 'aria-selected': String(i === 0), onclick: e => {
     bar.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', 'false'));
     e.currentTarget.setAttribute('aria-selected', 'true'); fn(panel);
@@ -205,6 +205,28 @@ async function accounts(panel) {
   };
   panel.replaceChildren(h('div', { class: 'two', style: 'align-items:start;margin-top:12px' }, h('div', {}, note, out), create));
   draw().catch(e => { note.textContent = e.message; });
+}
+
+async function visits(panel) {
+  const days = h('select', { class: 'field', 'aria-label': 'Rentang', style: 'max-width:200px' }, [7, 30, 90, 365].map(d => h('option', { value: d, selected: d === 30 }, `${d} hari terakhir`)));
+  const out = h('div');
+  const draw = async () => {
+    out.replaceChildren(h('p', { class: 'note' }, 'Memuat'));
+    try {
+      const r = await api('visits', { params: { days: days.value } });
+      const total = r.bySource.reduce((a, x) => a + x.n, 0);
+      const name = { 'web.id': 'techserva.web.id', 'my.id': 'techserva.my.id (dialihkan)', 'vercel.app': 'techserva.vercel.app', other: 'lainnya' };
+      out.replaceChildren(
+        h('div', { class: 'stat-row' }, h('div', {}, h('b', {}, fmt(total)), 'kunjungan'), ...r.bySource.map(x => h('div', {}, h('b', {}, fmt(x.n)), name[x.source] || x.source))),
+        h('h3', { style: 'margin-top:24px' }, 'Per hari'),
+        r.byDay.length ? h('table', { class: 'data' }, h('thead', {}, h('tr', {}, ...['Tanggal', 'Alamat', 'Kunjungan'].map(x => h('th', {}, x)))), h('tbody', {}, r.byDay.map(x => h('tr', {}, h('td', {}, x.day), h('td', {}, name[x.source] || x.source), h('td', {}, fmt(x.n)))))) : h('p', { class: 'note' }, 'Belum ada kunjungan tercatat.'),
+        h('h3', { style: 'margin-top:24px' }, 'Negara teratas'),
+        h('table', { class: 'data' }, h('tbody', {}, r.byCountry.map(x => h('tr', {}, h('td', {}, x.country), h('td', {}, fmt(x.n)))))));
+    } catch (e) { out.replaceChildren(h('p', { role: 'alert' }, e.message)); }
+  };
+  days.addEventListener('change', draw);
+  panel.replaceChildren(h('p', { class: 'note', style: 'margin-top:12px' }, 'Satu kunjungan = satu tab browser yang membuka situs. Tidak ada IP yang disimpan.'), days, out);
+  draw();
 }
 
 function mine(panel) {

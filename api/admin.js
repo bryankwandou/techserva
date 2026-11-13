@@ -57,6 +57,14 @@ export default async function handler(req, res) {
     return res.status(200).json({ configured: true, leads: out.filter(l => l && !seen.has(l.reference) && seen.add(l.reference)).sort((a, z) => z.at.localeCompare(a.at)) });
   }
 
+  if (action === 'visits') {
+    const days = Math.min(365, Math.max(1, +p.days || 30));
+    const bySource = await q(`select source, sum(n)::int as n from visits where day > current_date - $1::int group by source order by n desc`, [days]);
+    const byDay = await q(`select to_char(day, 'YYYY-MM-DD') as day, source, sum(n)::int as n from visits where day > current_date - $1::int group by day, source order by day desc`, [days]);
+    const byCountry = await q(`select country, sum(n)::int as n from visits where day > current_date - $1::int group by country order by n desc limit 15`, [days]);
+    return res.status(200).json({ days, bySource, byDay, byCountry });
+  }
+
   /* own account */
   if (action === 'password' && req.method === 'POST') {
     const [a] = await q(`select pass_hash from admins where id = $1`, [me.id]);
