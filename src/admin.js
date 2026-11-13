@@ -142,18 +142,21 @@ async function start() {
   await openDB();
   const panel = h('div', { id: 'panel' });
   const tabs = [['Templates', templates], ['Client loop', loop], ['Permintaan klien', leads], ['Pengunjung', visits], ...(meta.me.role === 'master' ? [['Akun', accounts]] : []), ['Akun saya', mine]];
-  const bar = h('div', { class: 'tabs', role: 'tablist' }, tabs.map(([name, fn], i) => h('button', { role: 'tab', 'aria-selected': String(i === 0), onclick: e => {
+  const title = h('h1', {}, tabs[0][0]);
+  const bar = h('nav', { class: 'ad-nav', role: 'tablist', 'aria-label': 'Bagian admin' }, tabs.map(([name, fn], i) => h('button', { role: 'tab', 'aria-selected': String(i === 0), onclick: e => {
     bar.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', 'false'));
-    e.currentTarget.setAttribute('aria-selected', 'true'); fn(panel);
-  } }, name)));
+    e.currentTarget.setAttribute('aria-selected', 'true'); title.textContent = name; fn(panel);
+  } }, h('span', {}, String(i + 1).padStart(2, '0')), name)));
+  app.classList.add('ad-shell');
   app.replaceChildren(
-    h('div', { class: 'row-gap', style: 'justify-content:space-between' },
-      h('h1', { style: 'font-size:2.6rem' }, 'Techserva admin'),
-      h('div', { class: 'row-gap' },
-        h('span', { class: 'note' }, `${meta.me.username}${meta.me.role === 'master' ? ' (master)' : ''}`),
-        h('button', { class: 'tool', onclick: () => { const d = document.documentElement; d.dataset.theme = d.dataset.theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('theme', d.dataset.theme); } catch {} } }, 'Terang atau gelap'),
-        h('button', { class: 'tool', onclick: async () => { await auth('logout'); login('Anda sudah keluar.'); } }, 'Keluar'))),
-    bar, panel);
+    h('aside', { class: 'ad-side' },
+      h('a', { class: 'ad-brand', href: '/' }, 'Techserva', h('small', {}, 'Admin')),
+      bar,
+      h('div', { class: 'ad-me' },
+        h('p', { class: 'ad-user' }, meta.me.username, h('small', {}, meta.me.role === 'master' ? 'Akun master' : 'Admin')),
+        h('button', { class: 'ad-link', onclick: () => { const d = document.documentElement; d.dataset.theme = d.dataset.theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('theme', d.dataset.theme); } catch {} } }, 'Terang atau gelap'),
+        h('button', { class: 'ad-link', onclick: async () => { app.classList.remove('ad-shell'); await auth('logout'); login('Anda sudah keluar.'); } }, 'Keluar'))),
+    h('div', { class: 'ad-main' }, h('header', { class: 'ad-top' }, title), panel));
   templates(panel);
 }
 
@@ -214,7 +217,7 @@ async function visits(panel) {
   const days = h('select', { class: 'field', 'aria-label': 'Rentang', style: 'max-width:200px;min-height:42px' }, [7, 30, 90, 365].map(d => h('option', { value: d, selected: d === 7 }, `${d} hari terakhir`)));
   const out = h('div'); let last = null;
   const NAME = { 'web.id': 'techserva.web.id', 'my.id': 'techserva.my.id', 'vercel.app': 'techserva.vercel.app', other: 'lainnya' };
-  const card = (n, label, cls) => h('div', { class: `an-card ${cls || ''}` }, h('b', {}, fmt(n)), h('span', {}, label));
+  const card = (n, label) => h('div', { class: 'an-fig' }, h('dt', {}, label), h('dd', {}, fmt(n)));
   const table = (head, rows) => h('table', { class: 'data' }, h('thead', {}, h('tr', {}, ...head.map(x => h('th', {}, x)))), h('tbody', {}, rows));
   const csv = () => {
     if (!last) return;
@@ -232,7 +235,7 @@ async function visits(panel) {
       const r = last = await api('visits', { params: { days: days.value } });
       const max = Math.max(1, ...r.trend.map(t => t.views)); const total = Math.max(1, r.total.views);
       out.replaceChildren(
-        h('div', { class: 'an-cards' }, card(r.total.views, 'Total tayangan halaman'), card(r.total.uniques, 'Pengunjung unik', 'b'), card(r.total.today, 'Tayangan hari ini', 'c'), card(r.total.wa, 'Klik WhatsApp', 'd'), card(r.total.leads, 'Permintaan lewat formulir', 'e')),
+        h('dl', { class: 'an-figs' }, card(r.total.views, 'Tayangan halaman'), card(r.total.uniques, 'Pengunjung unik'), card(r.total.today, 'Tayangan hari ini'), card(r.total.wa, 'Klik WhatsApp'), card(r.total.leads, 'Permintaan lewat formulir')),
         h('section', { class: 'an-box' }, h('div', { class: 'an-head' }, h('b', {}, `Tren pengunjung, ${r.days} hari`), h('span', { class: 'note' }, `${fmt(r.total.views)} tayangan`)),
           h('div', { class: 'an-chart' }, r.trend.map(t => h('div', { class: 'an-col', title: `${t.day}: ${t.views} tayangan (web.id ${t.web}, my.id ${t.my}, vercel.app ${t.vercel})` },
             h('small', {}, t.views ? String(t.views) : ''),
@@ -252,7 +255,7 @@ async function visits(panel) {
   days.addEventListener('change', draw);
   panel.replaceChildren(
     h('p', { class: 'an-note' }, h('b', {}, 'Penghitung milik situs sendiri. '), 'Tayangan dihitung setelah pengunjung menggerakkan pointer, menyentuh, menggulir, atau menekan tombol, jadi crawler dan pemindai domain otomatis tidak ikut. Angka sebelum 14 November 2026 masih memuat pemindai otomatis. Data disimpan di database Neon Techserva. Tidak ada IP yang disimpan.'),
-    h('div', { class: 'row-gap' }, days, h('button', { class: 'btn', onclick: csv }, 'Unduh CSV'), h('button', { class: 'btn primary', onclick: draw }, 'Muat ulang')), out);
+    h('div', { class: 'row-gap' }, days, h('button', { class: 'btn', onclick: csv }, 'Unduh CSV'), h('button', { class: 'btn', onclick: draw }, 'Muat ulang')), out);
   draw();
 }
 
