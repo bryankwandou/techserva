@@ -49,6 +49,16 @@ export const ui = {
   terms_title: 'Terms of service', terms_for: 'Terms for', terms_general: 'General terms', terms_specific: 'Terms specific to this service', terms_need: 'What you must provide', terms_out: 'Not included', terms_rule: 'Special rule', terms_price: 'Starting price', terms_deliverable: 'Deliverable', terms_time: 'Typical delivery', terms_back: 'Back to the service',
   chat_title: 'Service assistant', chat_hello: 'Hello. Tell me what you need built or fixed, and I will find the service, the price and the terms.', chat_placeholder: 'Describe the job', chat_send: 'Send', chat_open: 'Ask the assistant', chat_close: 'Close', chat_sources: 'Source', chat_none: 'I could not find that in the catalog. Send a request with a few details and a person will read it.', chat_try: 'Other matches', chat_starts: 'starts from', chat_read: 'Open',
   chip_1: 'I need a landing page', chip_2: 'How much is a pen test?', chip_3: 'Can I pay with USDT?', chip_4: 'How many revisions do I get?',
+  // WhatsApp contact: buttons, the contact page, and the messages they write for the visitor
+  nav_contact: 'Contact', wa_btn: 'Chat on WhatsApp', wa_order: 'Order on WhatsApp', wa_ask: 'Ask on WhatsApp', wa_pay_btn: 'Ask about payment on WhatsApp', wa_catalog_btn: 'Ask about the catalog on WhatsApp',
+  wa_terms_btn: 'Ask about these terms on WhatsApp', wa_custom_btn: 'Not on the list? Tell us on WhatsApp', wa_faq: 'Still have a question?', wa_admin: 'Ask the admin on WhatsApp',
+  contact_title: 'Talk to the admin on WhatsApp', contact_lead: 'Pick the message that fits. WhatsApp opens with the text already written, so you only press send.',
+  contact_number: 'WhatsApp number', contact_copy: 'Copy text', contact_copied: 'Copied', contact_pick: 'Pick a service', contact_open: 'Open WhatsApp',
+  wa_t_general: 'General question', wa_t_order: 'Order a service', wa_t_custom: 'A job that is not listed', wa_t_pay: 'Payment', wa_t_catalog: 'About the PDF catalog', wa_t_how: 'How ordering works',
+  wa_hi: 'Hello, I am writing to the Techserva admin.', wa_m_general: 'I have a question about your IT services.', wa_m_order: 'I would like to order this service:', wa_m_price: 'Starting price on the site:',
+  wa_m_brief: 'My project in short:', wa_m_custom: 'The job I need is not in the catalog. This is what I need:', wa_m_pay: 'I would like to ask about paying with USDT or USDC.',
+  wa_m_catalog: 'I read the PDF catalog and want to ask about a service.', wa_m_terms: 'I have a question about the terms of this service:', wa_m_chat: 'The site assistant could not answer my question:',
+  wa_m_how: 'I would like to know how an order works, step by step.', wa_m_about: 'About this service:',
   footer_tag: 'IT services with written scope and public prices.', footer_rights: 'All rights reserved.', footer_privacy: 'Privacy', footer_admin: 'Admin',
   book_title: 'Service catalog', book_sub: '500 IT services with prices and terms', book_rate: 'Prices shown in', book_toc: 'Contents', book_how: 'How an order works', book_rules: 'The rules', book_link: 'Terms', book_contact: 'Order at', book_col_service: 'Service', book_col_price: 'From', book_col_terms: 'Terms', book_note: 'Starting prices. Domain cost not included. Payment in USDT or USDC. Full payment is due before handover.',
 };

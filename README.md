@@ -39,9 +39,24 @@ Set these on Vercel. None are stored in this repository.
 
 | Name | Used for |
 |---|---|
-| `ADMIN_USER`, `ADMIN_PASS` | Dashboard login |
-| `ADMIN_SECRET` | Signs the session cookie and encrypts stored requests |
-| `BLOB_READ_WRITE_TOKEN` | Stores encrypted requests in Vercel Blob |
+| `DATABASE_URL` | Neon Postgres: admin accounts, sessions, password resets, client requests |
+| `ADMIN_SECRET` | Encrypts stored client requests |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Optional. Turns on "Sign in with Google". Redirect URI: `https://<domain>/api/auth?action=google-cb` |
+| `BLOB_READ_WRITE_TOKEN` | Optional. Reads requests saved before the move to Neon |
+
+## Admin accounts
+
+Accounts live in Neon (`lib/db.mjs`, `api/auth.js`, `api/admin.js`). Passwords are stored as scrypt hashes and sessions as hashed random tokens. There is one master account. Anyone can ask for an account on `/admin/#register`; it stays pending until the master approves it. The master can also create, disable and delete accounts and make one-time reset links for anyone who used "Forgot password". Create the tables and the master account once with:
+
+```
+MASTER_USER=... MASTER_PASS=... node --env-file=.env.neon scripts/seed-master.mjs
+```
+
+`scripts/check_auth.mjs` runs the whole flow against the database with a throwaway account.
+
+## WhatsApp contact
+
+Every WhatsApp button writes a message in the visitor's language that names where it was pressed (home hero, service page, terms page, assistant, PDF catalog card...) and which service. `/contact/` lists the ready messages. The number is set in `src/site.js`, `scripts/build.mjs` and `scripts/catalog-pdf.mjs`.
 
 ## How the assistant works
 

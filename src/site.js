@@ -174,12 +174,56 @@ function initOrder() {
   });
 }
 
+/* WhatsApp: every button writes a ready message for the place it was pressed (see data-wa, data-wa-src, data-code) */
+export const WA_NUMBER = '62895365173030';
+let waUi = null;
+const W = k => (waUi && waUi[k] ? tr(waUi[k][0], waUi[k][1]) : '');
+export function waText(kind, src, { code = '', query = '' } = {}) {
+  const s = code ? services.find(x => x.code === code) : null;
+  const svc = s ? `${s.code} ${nameOf(s)}` : '';
+  const lines = [W('wa_hi')];
+  if (kind === 'order') lines.push(W('wa_m_order'), svc, s ? `${W('wa_m_price')} ${money(s.idr)}` : '', '', W('wa_m_brief'), '');
+  else if (kind === 'terms') lines.push(W('wa_m_terms'), svc, '');
+  else if (kind === 'custom') lines.push(W('wa_m_custom'), query || '');
+  else if (kind === 'chat') lines.push(W('wa_m_chat'), query ? `"${query}"` : '', svc ? `${W('wa_m_about')} ${svc}` : '');
+  else if (kind === 'pay') lines.push(W('wa_m_pay'), '');
+  else if (kind === 'catalog') lines.push(W('wa_m_catalog'), svc, '');
+  else if (kind === 'how') lines.push(W('wa_m_how'));
+  else lines.push(W('wa_m_general'), svc ? `${W('wa_m_about')} ${svc}` : '', '');
+  // The last line tells the admin which button sent the message.
+  lines.push('', `[${src}${code ? ' | ' + code : ''} | ${state.lang} | ${location.host}${location.pathname}]`);
+  return lines.filter((l, i, a) => l !== '' || (i > 0 && a[i - 1] !== '')).join('\n');
+}
+export const waHref = (kind, src, o) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(waText(kind, src, o))}`;
+export async function waReady() {
+  waUi ||= await (await fetch('/assets/wa-ui.json')).json();
+  await loadServices();
+}
+async function waLinks() {
+  const links = $$('a[data-wa]'); if (!links.length) return;
+  await waReady();
+  links.forEach(a => { a.href = waHref(a.dataset.wa, a.dataset.waSrc || 'site', { code: a.dataset.code || '' }); a.target = '_blank'; a.rel = 'noopener'; });
+  $$('[data-wa-preview]').forEach(pre => { const a = pre.closest('.wa-card').querySelector('a[data-wa]'); pre.textContent = waText(a.dataset.wa, a.dataset.waSrc, { code: a.dataset.code || '' }); });
+}
+function initContact() {
+  const sel = $('#wa-service'); if (!sel) return;
+  const draw = () => { sel.replaceChildren(...services.map(s => { const o = document.createElement('option'); o.value = s.code; o.textContent = `${s.code} ${nameOf(s)}`; return o; })); };
+  loadServices().then(() => { draw(); sel.value = new URLSearchParams(location.search).get('s') || services[0].code; sel.dispatchEvent(new Event('change')); });
+  sel.addEventListener('change', () => { $('#wa-order').dataset.code = sel.value; waLinks(); });
+  addEventListener('langchange', () => { const v = sel.value; draw(); sel.value = v; });
+  $$('[data-wa-copy]').forEach(b => b.addEventListener('click', async () => {
+    const pre = b.closest('.wa-card').querySelector('pre');
+    try { await navigator.clipboard.writeText(pre.textContent); const t = b.textContent; b.textContent = b.dataset.done; setTimeout(() => { b.textContent = t; }, 1300); } catch { /* clipboard blocked */ }
+  }));
+}
+
 /* catalog picker */
 function initCatalog() {
   const sel = $('#book-lang'); if (!sel) return;
   sel.replaceChildren(...state.langs.map(l => { const o = document.createElement('option'); o.value = l.code; o.textContent = `${l.native} (${l.currency})`; return o; }));
   sel.value = state.lang;
-  const link = $('#book-link'); const sync = () => { link.href = `/catalog/pdf/${sel.value}.pdf`; };
+  const link = $('#book-link'); const cover = $('#book-cover'); const coverLink = $('#book-cover-link');
+  const sync = () => { link.href = `/catalog/pdf/${sel.value}.pdf`; if (coverLink) coverLink.href = link.href; if (cover) cover.src = `/catalog/cover/${sel.value}.jpg`; };
   sel.addEventListener('change', sync); sync();
 }
 
@@ -196,11 +240,12 @@ async function boot() {
   await setLang(want, { persist: !!(pageLang || saved), navigate: false });
   $$('.cat-list a').forEach((a, i) => { const f = v => dispatchEvent(new CustomEvent('catfocus', { detail: v })); a.addEventListener('pointerenter', () => f(i)); a.addEventListener('pointerleave', () => f(-1)); a.addEventListener('focus', () => f(i)); a.addEventListener('blur', () => f(-1)); });
   const hdr = $('header.site'); const onScroll = () => hdr?.classList.toggle('scrolled', scrollY > 40); addEventListener('scroll', onScroll, { passive: true }); onScroll();
-  initSearch(); initFilter(); initTicket(); initOrder(); initCatalog();
+  initSearch(); initFilter(); initTicket(); initOrder(); initCatalog(); initContact();
+  waLinks(); addEventListener('langchange', waLinks); addEventListener('pricechange', waLinks);
   // The floating assistant button would sit on top of the hero's price ticket, and the hero has its own assistant button.
   const hero = $('.hero'), fab = $('#chat-open');
   if (hero && fab && 'IntersectionObserver' in window) new IntersectionObserver(([e]) => fab.classList.toggle('away', e.isIntersecting), { rootMargin: '0px 0px -120px 0px' }).observe(hero);
-  import('/assets/chat.js').then(m => m.init(state, { tr, money }));
+  import('/assets/chat.js').then(m => m.init(state, { tr, money, waHref, waReady }));
   if (!reduced) import('/assets/motion.js').then(m => m.init());
   const start = () => import('/assets/scene.js').then(m => m.init({ reduced })).catch(() => {});
   start();

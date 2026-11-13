@@ -17,7 +17,7 @@ const write = (p, c) => { const f = path.join(OUT, p); fs.mkdirSync(path.dirname
 const copy = (from, to) => { const f = path.join(OUT, to); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.copyFileSync(from, f); };
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-for (const d of ['services', 'terms', 'l', 'i18n', 'catalog/index.html', 'privacy', 'assets', 'admin']) fs.rmSync(path.join(OUT, d), { recursive: true, force: true });
+for (const d of ['services', 'terms', 'l', 'i18n', 'catalog/index.html', 'privacy', 'assets', 'admin', 'contact']) fs.rmSync(path.join(OUT, d), { recursive: true, force: true });
 
 const keys = sourceStrings();
 const keyIndex = new Map(keys.map((k, i) => [k, i]));
@@ -82,11 +82,12 @@ write('assets/services.json', JSON.stringify(services.map(s => ({ name: s.name, 
     tickets: pickT.map(s => [s.code, K(catById[s.cat].name), catById[s.cat].name, K(s.name), s.name, s.idr]),
   }));
 }
-write('assets/chat-ui.json', JSON.stringify(Object.fromEntries(['chat_none', 'chat_starts', 'chat_sources', 'chat_try', 'chat_hello', 'nav_services', 'svc_terms'].map(k => [k, [K(ui[k]), ui[k]]]))));
+write('assets/chat-ui.json', JSON.stringify(Object.fromEntries(['chat_none', 'chat_starts', 'chat_sources', 'chat_try', 'chat_hello', 'nav_services', 'svc_terms', 'wa_custom_btn', 'wa_order', 'wa_admin'].map(k => [k, [K(ui[k]), ui[k]]]))));
+write('assets/wa-ui.json', JSON.stringify(Object.fromEntries(Object.keys(ui).filter(k => k.startsWith('wa_')).map(k => [k, [K(ui[k]), ui[k]]]))));
 const kb = [
   ...faq.map(([q, a]) => ({ type: 'faq', title: q, text: a, url: '/#faq', tk: K(q), xk: K(a) })),
   ...general.map(([q, a]) => ({ type: 'terms', title: q, text: a, url: '/terms/', tk: K(q), xk: K(a) })),
-  ...services.map(s => { const c = catById[s.cat]; return { type: 'service', title: s.name, text: c.blurb, url: `/services/${s.slug}/`, slug: s.slug, idr: s.idr, cat: s.cat, tk: K(s.name), xk: K(c.blurb) }; }),
+  ...services.map(s => { const c = catById[s.cat]; return { type: 'service', title: s.name, text: c.blurb, url: `/services/${s.slug}/`, slug: s.slug, code: s.code, idr: s.idr, cat: s.cat, tk: K(s.name), xk: K(c.blurb) }; }),
 ];
 write('assets/kb.json', JSON.stringify(kb));
 for (const l of langs) if (l.code !== 'en') write(`i18n/${l.code}.json`, JSON.stringify(keys.map(k => trans[l.code][k] || null)));
@@ -101,6 +102,9 @@ const mkT = lang => {
 };
 const ICON_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>';
 const ICON_GLOBE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>';
+
+const ICON_WA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8.4 19z"/><path d="M9 9.5c.3 2.2 2.3 4.4 5 5l1.2-1.3 1.8.8c-.2 1.3-1 2-2.4 2-3.9-.3-6.8-3.2-7.1-7.1 0-1.4.7-2.2 2-2.4l.8 1.8z" fill="currentColor" stroke="none"/></svg>';
+const WA = (kind, src, label, { code = '', cls = 'btn wa' } = {}) => `<a class="${cls}" href="https://wa.me/62895365173030" data-wa="${kind}" data-wa-src="${src}"${code ? ` data-code="${code}"` : ''} target="_blank" rel="noopener">${ICON_WA}${label}</a>`;
 
 function shell({ lang = 'en', title, desc, urlPath, body, home = false, attrs = '', head = '' }) {
   const { T, v } = mkT(lang);
@@ -129,7 +133,7 @@ ${head}
 <header class="site"><div class="wrap">
 <a class="brand" href="${lang === 'en' ? '/' : `/l/${lang}/`}"><img src="/assets/logo.svg" alt="" width="30" height="30">${BRAND}</a>
 <nav class="main" aria-label="Main">
-<a href="/services/">${T(ui.nav_services)}</a><a href="/#how">${T(ui.nav_how)}</a><a href="/terms/">${T(ui.nav_terms)}</a><a href="/catalog/">${T(ui.nav_catalog)}</a><a href="/#demo">${T(ui.nav_demo)}</a>
+<a href="/services/">${T(ui.nav_services)}</a><a href="/#how">${T(ui.nav_how)}</a><a href="/terms/">${T(ui.nav_terms)}</a><a href="/catalog/">${T(ui.nav_catalog)}</a><a href="/#demo">${T(ui.nav_demo)}</a><a href="/contact/">${T(ui.nav_contact)}</a>
 </nav>
 <div class="head-tools" style="display:flex;gap:8px">
 <button class="tool" id="lang" type="button" aria-haspopup="dialog" data-ka="${K(ui.lang_label)}" aria-label="${esc(v(ui.lang_label))}">${ICON_GLOBE}<span class="tool-label" data-lang-now>${esc(meta?.native || 'English')}</span></button>
@@ -140,7 +144,7 @@ ${head}
 <main id="main">${body(T, v)}</main>
 <footer class="site"><div class="wrap">
 <div><a class="brand" href="/" style="text-decoration:none"><img src="/assets/logo.svg" alt="" width="26" height="26">${BRAND}</a><p class="note" style="margin-top:6px">${T(ui.footer_tag)}</p></div>
-<nav aria-label="Footer"><a href="/services/">${T(ui.nav_services)}</a><a href="/terms/">${T(ui.nav_terms)}</a><a href="/catalog/">${T(ui.nav_catalog)}</a><a href="/privacy/">${T(ui.footer_privacy)}</a><a href="/admin/">${T(ui.footer_admin)}</a></nav>
+<nav aria-label="Footer"><a href="/services/">${T(ui.nav_services)}</a><a href="/terms/">${T(ui.nav_terms)}</a><a href="/catalog/">${T(ui.nav_catalog)}</a><a href="/contact/">${T(ui.nav_contact)}</a><a href="/privacy/">${T(ui.footer_privacy)}</a><a href="/admin/">${T(ui.footer_admin)}</a>${WA('general', 'footer', T(ui.wa_btn), { cls: 'wa wa-foot' })}</nav>
 <p class="note">&copy; 2026 ${BRAND}. ${T(ui.footer_rights)}</p>
 </div></footer>
 <button class="chat-open" id="chat-open" type="button">${T(ui.chat_open)}</button>
@@ -170,7 +174,7 @@ function homeBody(lang) {
 <h1>${esc(t1)}${t2 ? `, <em>${esc(t2.trim())}</em>` : ''}</h1>
 <p class="lead" data-k="${K(ui.hero_lead)}">${esc(v(ui.hero_lead))}</p>
 <div class="search-box"><input id="home-search" type="search" autocomplete="off" data-kp="${K(ui.search_placeholder)}" placeholder="${esc(v(ui.search_placeholder))}" aria-label="${esc(v(ui.search_placeholder))}" data-none="${esc(v(ui.search_none))}"><div class="search-results" id="home-results" data-lenis-prevent hidden></div></div>
-<div class="actions"><a class="btn primary" href="/services/">${T(ui.hero_cta)}</a><button class="btn" type="button" data-open-chat>${T(ui.hero_cta2)}</button></div>
+<div class="actions"><a class="btn primary" href="/services/">${T(ui.hero_cta)}</a><button class="btn" type="button" data-open-chat>${T(ui.hero_cta2)}</button>${WA('general', 'home/hero', T(ui.wa_btn))}</div>
 <a class="down" href="#cats" aria-label="${esc(v(ui.cats_title))}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a>
 </div>
 <article class="ticket" id="ticket" aria-live="off">
@@ -201,6 +205,7 @@ ${[[ui.how1_t, ui.how1_d], [ui.how2_t, ui.how2_d], [ui.how3_t, ui.how3_d], [ui.h
 <div>${T(ui.rule3_t, 'h3')}${T(ui.rule3_d, 'p')}</div>
 </div>
 <p class="lead" data-rise style="margin-top:28px"><b>${T(ui.pay_title)}.</b> ${T(ui.pay_lead)}</p>
+<p data-rise style="margin-top:18px">${WA('pay', 'home/payment', T(ui.wa_pay_btn))}</p>
 </div></section>
 
 <section class="block solid" id="demo"><div class="wrap two">
@@ -209,15 +214,16 @@ ${[[ui.how1_t, ui.how1_d], [ui.how2_t, ui.how2_d], [ui.how3_t, ui.how3_d], [ui.h
 </div></section>
 
 <section class="block" id="book"><div class="wrap book">
-<div class="book-cover" data-rise aria-hidden="true"><b>${BRAND}</b><span>500 / ${langs.length}</span></div>
+<a class="book-cover" data-rise id="book-cover-link" href="/catalog/pdf/${lang}.pdf" aria-label="${esc(v(ui.download_pdf))}"><img id="book-cover" src="/catalog/cover/${lang}.jpg" width="380" height="537" alt="${esc(v(ui.catalog_title))}" loading="lazy"></a>
 <div><h2 data-rise>${T(ui.catalog_title)}</h2><p class="lead" data-rise style="margin-top:14px">${T(ui.catalog_lead)}</p>
-<div class="pick" data-rise><select id="book-lang" aria-label="${esc(v(ui.lang_label))}"></select><a class="btn primary" id="book-link" href="/catalog/pdf/${lang}.pdf">${T(ui.download_pdf)}</a><a class="btn" href="/catalog/">${T(ui.catalog_all)}</a></div>
+<div class="pick" data-rise><select id="book-lang" aria-label="${esc(v(ui.lang_label))}"></select><a class="btn primary" id="book-link" href="/catalog/pdf/${lang}.pdf">${T(ui.download_pdf)}</a><a class="btn" href="/catalog/">${T(ui.catalog_all)}</a>${WA('catalog', 'home/catalog-book', T(ui.wa_catalog_btn))}</div>
 <p class="note" style="margin-top:14px">${T(ui.price_note)}</p></div>
 </div></section>
 
 <section class="block" id="faq"><div class="wrap two" style="align-items:start">
 <h2 data-rise>${T(ui.faq_title)}</h2>
-<div class="faq">${faq.map(([q, a]) => `<details data-rise><summary>${T(q)}</summary>${T(a, 'p')}</details>`).join('')}</div>
+<div class="faq">${faq.map(([q, a]) => `<details data-rise><summary>${T(q)}</summary>${T(a, 'p')}</details>`).join('')}
+<p data-rise style="margin-top:22px"><b>${T(ui.wa_faq)}</b></p><p style="margin-top:10px">${WA('general', 'home/faq', T(ui.wa_ask))}</p></div>
 </div></section>
 <div id="end"></div>
 ${lang === 'en' ? '' : `<div class="wrap"><p class="mt" id="mt-note">${T(ui.mt_note)}</p></div>`}`;
@@ -239,6 +245,7 @@ ${T(ui.hero_cta, 'h1')}
 <div class="toolbar"><input class="field" id="svc-filter" type="search" data-kp="${K(ui.search_placeholder)}" placeholder="${esc(ui.search_placeholder)}" aria-label="${esc(ui.search_placeholder)}">
 <select class="field" id="svc-cat" aria-label="${esc(ui.all_categories)}" style="flex:0 1 320px"><option value="" data-k="${K(ui.all_categories)}">${esc(ui.all_categories)}</option>${categories.map(c => `<option value="${c.id}" data-k="${K(c.name)}">${esc(c.name)}</option>`).join('')}</select></div>
 <p class="note"><b id="svc-count">500</b> ${T(ui.search_results)}</p>
+<p style="margin:6px 0 18px">${WA('custom', 'services-list', T(ui.wa_custom_btn))}</p>
 ${categories.map(c => `<section class="svc-group" data-cat="${c.id}" id="${c.id}">${T(c.name, 'h2')}<p class="note" style="margin-bottom:12px">${T(c.blurb)}</p>
 <ul class="svc-list">${services.filter(s => s.cat === c.id).map(s => `<li data-en="${esc(s.name.toLowerCase())}"><a href="/services/${s.slug}/"><span class="code">${s.code}</span>${T(s.name)}${P(s.idr)}</a></li>`).join('')}</ul></section>`).join('')}
 <p class="mt" id="mt-note" hidden>${T(ui.mt_note)}</p>
@@ -272,6 +279,7 @@ ${T(ui.svc_scope, 'h2')}
 <p class="note">${T(ui.svc_price_note)}</p>
 <p class="note" style="margin-top:10px">${T(ui.svc_timeline)}: <b>${days}</b> ${T(ui.svc_days)}</p>
 <a class="btn" href="/terms/${s.slug}/">${T(ui.svc_terms)}</a>
+${WA('order', 'service-page/aside', T(ui.wa_order), { code: s.code })}
 <form class="form" id="order" data-sent="${esc(ui.order_sent)}" data-fail="${esc(ui.order_fail)}">
 ${T(ui.order_title, 'h3')}
 <input type="hidden" name="service" value="${s.code}">
@@ -300,6 +308,7 @@ ${T(ui.terms_time, 'h3')}<p>${days} ${T(ui.svc_days)}</p>
 ${T(ui.terms_need, 'h3')}${T(t.need, 'p')}
 ${T(ui.terms_out, 'h3')}${T(t.out, 'p')}
 ${T(ui.terms_rule, 'h3')}${T(t.rule, 'p')}
+<p style="margin-top:22px">${WA('terms', 'terms-page', T(ui.wa_terms_btn), { code: s.code })}</p>
 ${T(ui.terms_general, 'h2')}
 ${general.map(([h, b], i) => `<h3>${i + 1}. ${T(h)}</h3>${T(b, 'p')}`).join('')}
 </div></div>`,
@@ -332,7 +341,25 @@ write('catalog/index.html', shell({
 ${T(ui.catalog_title, 'h1')}
 <p class="lead">${T(ui.catalog_lead)}</p>
 <p class="note" style="margin-top:12px">${T(ui.price_note)} ${esc(fx.time_last_update_utc.slice(5, 16))}</p>
+<p style="margin-top:16px">${WA('catalog', 'catalog-page', T(ui.wa_catalog_btn))}</p>
 <div class="lang-grid">${langs.map(l => `<a href="/catalog/pdf/${l.code}.pdf"><span dir="auto">${esc(l.native)}</span><small>${l.currency}</small></a>`).join('')}</div>
+</div></div>`,
+}));
+
+/* contact: WhatsApp messages written for the visitor */
+write('contact/index.html', shell({
+  title: `Contact the admin on WhatsApp | ${BRAND}`, desc: 'Ready-written WhatsApp messages for a question, an order, a job that is not listed, payment or the PDF catalog.', urlPath: '/contact/',
+  body: T => `<div class="page"><div class="wrap">
+${T(ui.contact_title, 'h1')}
+<p class="lead">${T(ui.contact_lead)}</p>
+<p style="margin-top:16px">${T(ui.contact_number)}: <a class="wa-num" href="https://wa.me/62895365173030" data-wa="general" data-wa-src="contact/number" target="_blank" rel="noopener">+62 895-3651-73030</a></p>
+<div class="wa-list" id="wa-list">
+${[['general', ui.wa_t_general], ['order', ui.wa_t_order], ['custom', ui.wa_t_custom], ['pay', ui.wa_t_pay], ['catalog', ui.wa_t_catalog], ['how', ui.wa_t_how]].map(([k, title]) => `<div class="wa-card">${T(title, 'h2')}
+${k === 'order' ? `<select class="field" id="wa-service" aria-label="${esc(ui.contact_pick)}"></select>` : ''}
+<pre data-wa-preview></pre>
+<div class="row-gap">${WA(k, `contact/${k}`, T(ui.contact_open)).replace('<a ', k === 'order' ? '<a id="wa-order" ' : '<a ')}<button class="tool" type="button" data-wa-copy data-done="${esc(ui.contact_copied)}" data-k="${K(ui.contact_copy)}">${esc(ui.contact_copy)}</button></div></div>`).join('')}
+</div>
+<p class="mt" id="mt-note" hidden>${T(ui.mt_note)}</p>
 </div></div>`,
 }));
 
@@ -369,7 +396,7 @@ const geo = Object.fromEntries(Object.entries(countryLang).filter(([, l]) => lan
 console.log('countries mapped', Object.keys(geo).length, 'dropped', Object.entries(countryLang).filter(([c]) => !geo[c]).map(p => p.join(':')).join(' ') || 'none');
 fs.writeFileSync(path.join(ROOT, 'middleware.js'), `// Generated by scripts/build.mjs from data/countries.mjs. Do not edit.
 const MAP = ${JSON.stringify(geo)};
-export const config = { matcher: ['/', '/services/:path*', '/terms/:path*', '/catalog', '/catalog/', '/privacy', '/privacy/', '/l/:path*'] };
+export const config = { matcher: ['/', '/services/:path*', '/terms/:path*', '/catalog', '/catalog/', '/privacy', '/privacy/', '/contact', '/contact/', '/l/:path*'] };
 export default function middleware(request) {
   const url = new URL(request.url);
   const cc = (request.headers.get('x-vercel-ip-country') || '').toUpperCase();
@@ -394,7 +421,7 @@ export default function middleware(request) {
 `);
 
 /* seo */
-const urls = ['/', '/services/', '/terms/', '/catalog/', '/privacy/', ...services.flatMap(s => [`/services/${s.slug}/`, `/terms/${s.slug}/`]), ...langs.filter(l => l.code !== 'en').map(l => `/l/${l.code}/`)];
+const urls = ['/', '/services/', '/terms/', '/catalog/', '/privacy/', '/contact/', ...services.flatMap(s => [`/services/${s.slug}/`, `/terms/${s.slug}/`]), ...langs.filter(l => l.code !== 'en').map(l => `/l/${l.code}/`)];
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map(u => `<url><loc>${SITE}${u}</loc></url>`).join('')}</urlset>`);
 write('robots.txt', `User-agent: *\nDisallow: /admin/\nDisallow: /api/\nSitemap: ${SITE}/sitemap.xml\n`);
 write('404.html', shell({ title: `Page not found | ${BRAND}`, desc: 'Page not found.', urlPath: '/404', body: T => `<div class="page"><div class="wrap"><h1>404</h1><p class="lead">This page does not exist.</p><p style="margin-top:18px"><a class="btn" href="/services/">${T(ui.nav_services)}</a></p></div></div>` }));

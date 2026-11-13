@@ -1,4 +1,4 @@
-// Admin dashboard. The client queue lives in this browser's IndexedDB; it holds no data on the server.
+// Admin dashboard. Accounts and sessions live in Neon (api/auth.js); the client queue lives in this browser's IndexedDB.
 const app = document.getElementById('app');
 const h = (tag, attrs = {}, ...kids) => {
   const e = document.createElement(tag);
@@ -37,26 +37,108 @@ const nextJob = () => new Promise((ok, no) => {
 const putJob = j => tx('readwrite', s => s.put(j));
 const addJobs = jobs => tx('readwrite', s => { jobs.forEach(j => s.add(j)); });
 
-let meta = null;
+const call = base => async (action, { params = {}, body } = {}) => {
+  const q = new URLSearchParams({ action, ...params });
+  const r = await fetch(`/api/${base}?${q}`, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : {});
+  const j = await r.json().catch(() => ({ error: 'Jawaban server tidak terbaca' }));
+  if (!r.ok) { const err = new Error(j.error || 'Gagal'); err.status = r.status; throw err; }
+  return j;
+};
+const auth = call('auth');
 
-function login(msg = '') {
-  const u = h('input', { class: 'field', autocomplete: 'username', 'aria-label': 'Username', placeholder: 'Username' });
-  const p = h('input', { class: 'field', type: 'password', autocomplete: 'current-password', 'aria-label': 'Password', placeholder: 'Password' });
+let meta = null;
+const GOOGLE_NOTE = {
+  'google-off': 'Login Google belum diaktifkan di server.',
+  'google-failed': 'Login Google gagal. Coba lagi.',
+  pending: 'Akun Google ini sudah tercatat dan menunggu persetujuan akun master.',
+  disabled: 'Akun ini dinonaktifkan.',
+};
+const field = (attrs) => h('input', { class: 'field', ...attrs });
+const card = (title, ...kids) => h('div', { class: 'auth-card' }, h('h1', {}, title), ...kids);
+const linkBtn = (text, view) => h('button', { type: 'button', class: 'linkish', onclick: () => { location.hash = view; } }, text);
+
+async function googleBtn() {
+  let on = false;
+  try { on = (await auth('config')).google; } catch { /* offline */ }
+  return h('a', { class: 'btn google', href: on ? '/api/auth?action=google' : '#login=google-off', onclick: on ? null : e => { e.preventDefault(); location.hash = 'login=google-off'; } },
+    h('svg', { viewBox: '0 0 24 24', width: '18', height: '18', 'aria-hidden': 'true' }), 'Masuk dengan Google');
+}
+const gIcon = el => { const s = el.querySelector('svg'); if (s) s.innerHTML = '<path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5a5.6 5.6 0 0 1-2.4 3.7v3h3.9c2.3-2.1 3.5-5.2 3.5-8.8z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 7.9-2.9l-3.9-3c-1.1.7-2.4 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9h-4v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.4 14.4a7.2 7.2 0 0 1 0-4.6V6.7h-4a12 12 0 0 0 0 10.8z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 0 0 1.4 6.7l4 3.1C6.3 6.9 8.9 4.8 12 4.8z"/>'; return el; };
+
+async function login(msg = '') {
+  const u = field({ autocomplete: 'username', 'aria-label': 'Username atau email', placeholder: 'Username atau email', required: true });
+  const p = field({ type: 'password', autocomplete: 'current-password', 'aria-label': 'Password', placeholder: 'Password', required: true });
   const note = h('p', { class: 'note', role: 'alert' }, msg);
-  const form = h('form', { class: 'form', style: 'max-width:380px', onsubmit: async e => {
-    e.preventDefault();
-    try { await api('login', { body: { user: u.value, pass: p.value } }); start(); }
+  const form = h('form', { class: 'form', onsubmit: async e => {
+    e.preventDefault(); note.textContent = '';
+    try { await auth('login', { body: { user: u.value, pass: p.value } }); location.hash = ''; start(); }
     catch (err) { note.textContent = err.message; }
-  } }, u, p, h('button', { class: 'btn primary', type: 'submit' }, 'Sign in'), note);
-  app.replaceChildren(h('h1', { style: 'font-size:3rem;margin-top:48px' }, 'Admin'), form);
+  } }, u, p, h('button', { class: 'btn primary', type: 'submit' }, 'Masuk'), note);
+  app.replaceChildren(card('Masuk admin', form, h('p', { class: 'or' }, 'atau'), gIcon(await googleBtn()),
+    h('p', { class: 'auth-links' }, linkBtn('Lupa password', 'forgot'), linkBtn('Buat akun', 'register'))));
+  u.focus();
+}
+
+function register() {
+  const u = field({ autocomplete: 'username', placeholder: 'Username', 'aria-label': 'Username', required: true, minlength: '3', maxlength: '32' });
+  const m = field({ type: 'email', autocomplete: 'email', placeholder: 'Email', 'aria-label': 'Email', required: true });
+  const p = field({ type: 'password', autocomplete: 'new-password', placeholder: 'Password, minimal 8 karakter', 'aria-label': 'Password', required: true, minlength: '8' });
+  const p2 = field({ type: 'password', autocomplete: 'new-password', placeholder: 'Ulangi password', 'aria-label': 'Ulangi password', required: true });
+  const why = h('textarea', { class: 'field', placeholder: 'Siapa Anda dan untuk apa akses admin ini (opsional)', 'aria-label': 'Catatan', maxlength: '300' });
+  const note = h('p', { class: 'note', role: 'alert' });
+  const form = h('form', { class: 'form', onsubmit: async e => {
+    e.preventDefault(); note.textContent = '';
+    if (p.value !== p2.value) { note.textContent = 'Kedua password tidak sama.'; return; }
+    try {
+      await auth('register', { body: { username: u.value, email: m.value, pass: p.value, note: why.value } });
+      app.replaceChildren(card('Permintaan terkirim', h('p', { class: 'lead' }, 'Akun Anda sudah tercatat dan menunggu persetujuan akun master. Setelah disetujui, Anda bisa masuk dengan username dan password tadi.'), h('p', { class: 'auth-links' }, linkBtn('Kembali ke halaman masuk', 'login'))));
+    } catch (err) { note.textContent = err.message; }
+  } }, u, m, p, p2, why, h('button', { class: 'btn primary', type: 'submit' }, 'Minta akun'), note);
+  app.replaceChildren(card('Buat akun admin', h('p', { class: 'note' }, 'Akun baru aktif setelah disetujui akun master.'), form, h('p', { class: 'auth-links' }, linkBtn('Sudah punya akun? Masuk', 'login'))));
+}
+
+function forgot() {
+  const u = field({ placeholder: 'Username atau email', 'aria-label': 'Username atau email', required: true });
+  const note = h('p', { class: 'note', role: 'alert' });
+  const form = h('form', { class: 'form', onsubmit: async e => {
+    e.preventDefault(); note.textContent = '';
+    try {
+      await auth('forgot', { body: { user: u.value } });
+      app.replaceChildren(card('Permintaan reset tercatat', h('p', { class: 'lead' }, 'Kalau akun itu ada, akun master akan melihat permintaan ini dan mengirim link reset kepada Anda. Link berlaku 2 jam.'), h('p', { class: 'auth-links' }, linkBtn('Kembali ke halaman masuk', 'login'))));
+    } catch (err) { note.textContent = err.message; }
+  } }, u, h('button', { class: 'btn primary', type: 'submit' }, 'Minta link reset'), note);
+  app.replaceChildren(card('Lupa password', h('p', { class: 'note' }, 'Akun yang tersambung ke Google juga bisa langsung masuk dengan tombol Google.'), form, h('p', { class: 'auth-links' }, linkBtn('Kembali ke halaman masuk', 'login'))));
+}
+
+function reset(t) {
+  const p = field({ type: 'password', autocomplete: 'new-password', placeholder: 'Password baru, minimal 8 karakter', 'aria-label': 'Password baru', required: true, minlength: '8' });
+  const p2 = field({ type: 'password', autocomplete: 'new-password', placeholder: 'Ulangi password baru', 'aria-label': 'Ulangi password baru', required: true });
+  const note = h('p', { class: 'note', role: 'alert' });
+  const form = h('form', { class: 'form', onsubmit: async e => {
+    e.preventDefault(); note.textContent = '';
+    if (p.value !== p2.value) { note.textContent = 'Kedua password tidak sama.'; return; }
+    try { await auth('reset', { body: { token: t, pass: p.value } }); history.replaceState(null, '', '/admin/'); login('Password sudah diganti. Silakan masuk.'); }
+    catch (err) { note.textContent = err.message; }
+  } }, p, p2, h('button', { class: 'btn primary', type: 'submit' }, 'Simpan password baru'), note);
+  app.replaceChildren(card('Buat password baru', form));
+}
+
+function route() {
+  const hsh = location.hash.slice(1);
+  if (hsh.startsWith('reset=')) return reset(hsh.slice(6));
+  if (hsh === 'register') return register();
+  if (hsh === 'forgot') return forgot();
+  if (hsh.startsWith('login=')) return login(GOOGLE_NOTE[hsh.slice(6)] || '');
+  return start();
 }
 
 async function start() {
   try { meta = await api('meta'); }
-  catch (e) { if (e.status === 401) return login(); return login(e.message); }
+  catch (e) { return login(e.status === 401 ? '' : e.message); }
+  if (location.hash && !location.hash.startsWith('#reset')) history.replaceState(null, '', '/admin/');
   await openDB();
   const panel = h('div', { id: 'panel' });
-  const tabs = [['Templates', templates], ['Client loop', loop], ['Requests', leads]];
+  const tabs = [['Templates', templates], ['Client loop', loop], ['Permintaan klien', leads], ...(meta.me.role === 'master' ? [['Akun', accounts]] : []), ['Akun saya', mine]];
   const bar = h('div', { class: 'tabs', role: 'tablist' }, tabs.map(([name, fn], i) => h('button', { role: 'tab', 'aria-selected': String(i === 0), onclick: e => {
     bar.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', 'false'));
     e.currentTarget.setAttribute('aria-selected', 'true'); fn(panel);
@@ -65,10 +147,81 @@ async function start() {
     h('div', { class: 'row-gap', style: 'justify-content:space-between' },
       h('h1', { style: 'font-size:2.6rem' }, 'Techserva admin'),
       h('div', { class: 'row-gap' },
-        h('button', { class: 'tool', onclick: () => { const d = document.documentElement; d.dataset.theme = d.dataset.theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('theme', d.dataset.theme); } catch {} } }, 'Light or dark'),
-        h('button', { class: 'tool', onclick: async () => { await api('logout'); login(); } }, 'Sign out'))),
+        h('span', { class: 'note' }, `${meta.me.username}${meta.me.role === 'master' ? ' (master)' : ''}`),
+        h('button', { class: 'tool', onclick: () => { const d = document.documentElement; d.dataset.theme = d.dataset.theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('theme', d.dataset.theme); } catch {} } }, 'Terang atau gelap'),
+        h('button', { class: 'tool', onclick: async () => { await auth('logout'); login('Anda sudah keluar.'); } }, 'Keluar'))),
     bar, panel);
   templates(panel);
+}
+
+const when = t => (t ? new Date(t).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : '-');
+const STATUS = { active: 'aktif', pending: 'menunggu', disabled: 'nonaktif' };
+
+async function accounts(panel) {
+  const note = h('p', { class: 'note', role: 'alert' });
+  const out = h('div');
+  const act = async (action, id, confirmText) => {
+    if (confirmText && !confirm(confirmText)) return;
+    try {
+      const r = await api(action, { body: { id } });
+      if (r.link) {
+        const box = h('input', { class: 'field', readonly: true, value: r.link, 'aria-label': 'Link reset' });
+        note.replaceChildren(`Link reset (berlaku ${r.hours} jam, sekali pakai). Kirim ke pemilik akun: `, box, h('button', { class: 'tool', onclick: e => copy(r.link, e.currentTarget) }, 'Salin'));
+        box.select();
+      } else note.textContent = 'Tersimpan.';
+      draw();
+    } catch (e) { note.textContent = e.message; }
+  };
+  const u = field({ placeholder: 'Username', 'aria-label': 'Username', required: true });
+  const m = field({ type: 'email', placeholder: 'Email (opsional)', 'aria-label': 'Email' });
+  const p = field({ type: 'text', placeholder: 'Password awal, minimal 8 karakter', 'aria-label': 'Password awal', required: true, minlength: '8' });
+  const create = h('form', { class: 'form', onsubmit: async e => {
+    e.preventDefault();
+    try { await api('create', { body: { username: u.value, email: m.value, pass: p.value } }); note.textContent = `Akun ${u.value} dibuat dan langsung aktif.`; u.value = m.value = p.value = ''; draw(); }
+    catch (err) { note.textContent = err.message; }
+  } }, h('h3', {}, 'Buat akun baru'), u, m, p, h('button', { class: 'btn primary', type: 'submit' }, 'Buat akun'));
+  const draw = async () => {
+    const r = await api('accounts');
+    const pending = r.accounts.filter(a => a.status === 'pending');
+    const resets = r.accounts.filter(a => a.wants_reset);
+    out.replaceChildren(
+      h('h3', { style: 'margin-top:8px' }, `Menunggu persetujuan (${pending.length})`),
+      pending.length ? h('table', { class: 'data' }, h('tbody', {}, pending.map(a => h('tr', {},
+        h('td', {}, h('b', {}, a.username)), h('td', {}, a.email || '-'), h('td', {}, a.note || ''), h('td', {}, when(a.created_at)),
+        h('td', {}, h('div', { class: 'row-gap' }, h('button', { class: 'btn primary', onclick: () => act('approve', a.id) }, 'Setujui'), h('button', { class: 'tool', onclick: () => act('reject', a.id, `Tolak dan hapus permintaan ${a.username}?`) }, 'Tolak'))))))) : h('p', { class: 'note' }, 'Tidak ada.'),
+      h('h3', { style: 'margin-top:24px' }, `Minta reset password (${resets.length})`),
+      resets.length ? h('table', { class: 'data' }, h('tbody', {}, resets.map(a => h('tr', {}, h('td', {}, h('b', {}, a.username)), h('td', {}, a.email || '-'),
+        h('td', {}, a.role === 'master' ? 'Akun master: pakai login Google atau skrip seed' : h('button', { class: 'btn primary', onclick: () => act('reset-link', a.id) }, 'Buat link reset')))))) : h('p', { class: 'note' }, 'Tidak ada.'),
+      h('h3', { style: 'margin-top:24px' }, `Semua akun (${r.accounts.length})`),
+      h('table', { class: 'data' }, h('thead', {}, h('tr', {}, ...['Username', 'Email', 'Peran', 'Status', 'Google', 'Terakhir masuk', ''].map(x => h('th', {}, x)))),
+        h('tbody', {}, r.accounts.map(a => h('tr', {},
+          h('td', {}, a.username), h('td', {}, a.email || '-'), h('td', {}, a.role), h('td', {}, STATUS[a.status] || a.status), h('td', {}, a.google ? 'ya' : '-'), h('td', {}, when(a.last_login)),
+          h('td', {}, a.role === 'master' ? '' : h('div', { class: 'row-gap' },
+            a.status === 'active' ? h('button', { class: 'tool', onclick: () => act('disable', a.id) }, 'Nonaktifkan') : a.status === 'disabled' ? h('button', { class: 'tool', onclick: () => act('enable', a.id) }, 'Aktifkan') : null,
+            a.status !== 'pending' ? h('button', { class: 'tool', onclick: () => act('reset-link', a.id) }, 'Link reset') : null,
+            h('button', { class: 'tool', onclick: () => act('delete', a.id, `Hapus akun ${a.username}?`) }, 'Hapus'))))))),
+      h('h3', { style: 'margin-top:24px' }, 'Aktivitas terakhir'),
+      h('table', { class: 'data' }, h('tbody', {}, r.log.map(l => h('tr', {}, h('td', {}, when(l.created_at)), h('td', {}, l.username || '-'), h('td', {}, l.action), h('td', {}, l.detail || ''))))));
+  };
+  panel.replaceChildren(h('div', { class: 'two', style: 'align-items:start;margin-top:12px' }, h('div', {}, note, out), create));
+  draw().catch(e => { note.textContent = e.message; });
+}
+
+function mine(panel) {
+  const note = h('p', { class: 'note', role: 'alert' });
+  const cur = field({ type: 'password', autocomplete: 'current-password', placeholder: 'Password lama', 'aria-label': 'Password lama' });
+  const p = field({ type: 'password', autocomplete: 'new-password', placeholder: 'Password baru, minimal 8 karakter', 'aria-label': 'Password baru', minlength: '8', required: true });
+  const m = field({ type: 'email', value: meta.me.email || '', placeholder: 'Email untuk login Google', 'aria-label': 'Email' });
+  const say = t => { note.textContent = t; };
+  panel.replaceChildren(h('div', { class: 'two', style: 'align-items:start;margin-top:12px' },
+    h('form', { class: 'form', onsubmit: async e => { e.preventDefault(); try { await api('password', { body: { current: cur.value, pass: p.value } }); cur.value = p.value = ''; say('Password diganti.'); } catch (err) { say(err.message); } } },
+      h('h3', {}, 'Ganti password'), cur, p, h('button', { class: 'btn primary', type: 'submit' }, 'Simpan password')),
+    h('div', {},
+      h('form', { class: 'form', onsubmit: async e => { e.preventDefault(); try { await api('email', { body: { email: m.value } }); meta.me.email = m.value; say('Email disimpan. Akun Google dengan email ini bisa dipakai untuk masuk.'); } catch (err) { say(err.message); } } },
+        h('h3', {}, 'Email dan Google'), h('p', { class: 'note' }, meta.me.google ? 'Akun Google sudah tersambung.' : 'Belum ada akun Google yang tersambung. Isi email Gmail Anda, lalu masuk sekali dengan tombol Google.'), m,
+        h('div', { class: 'row-gap' }, h('button', { class: 'btn', type: 'submit' }, 'Simpan email'), meta.me.google ? h('button', { class: 'tool', type: 'button', onclick: async () => { await api('unlink-google', { body: {} }); meta.me.google = false; say('Akun Google dilepas.'); } }, 'Lepas Google') : null)),
+      h('div', { class: 'form' }, h('h3', {}, 'Sesi'), h('button', { class: 'tool', onclick: async () => { await api('signout-all', { body: {} }); login('Semua sesi sudah keluar.'); } }, 'Keluar dari semua perangkat')),
+      note)));
 }
 
 const options = (list, label) => [h('option', { value: '' }, label), ...list.map(x => h('option', { value: x.id }, x.name))];
@@ -183,4 +336,5 @@ async function leads(panel) {
       h('tbody', {}, r.leads.map(l => h('tr', {}, h('td', {}, l.reference), h('td', {}, l.service), h('td', {}, l.name), h('td', {}, l.contact), h('td', {}, l.brief), h('td', {}, l.lang), h('td', {}, l.at.slice(0, 16).replace('T', ' ')))))));
   } catch (e) { panel.replaceChildren(h('p', { role: 'alert' }, e.message)); }
 }
-start();
+addEventListener('hashchange', route);
+route();

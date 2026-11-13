@@ -12,19 +12,25 @@ async function ensureIndex(state, tr) {
   index = buildIndex(docs); index.lang = state.lang;
   return index;
 }
+// A WhatsApp link that carries the question, so the admin sees what the assistant could not answer.
+const waLink = (kind, label, query, code) => {
+  const a = el('a', 'wa-chat', label); a.href = ctx.waHref(kind, kind === 'custom' ? 'assistant/no-answer' : 'assistant/answer', { query, code });
+  a.target = '_blank'; a.rel = 'noopener'; return a;
+};
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
 
 // `hint` is the English wording of a suggestion chip: the chip shows the visitor's language,
 // and the hint keeps the search exact even when the translation drifts.
 function answer(query, hint = '') {
   const { tr, money, ui } = ctx;
+  const label = k => tr(ui[k][0], ui[k][1]);
   const hits = search(index, hint || query, 6);
   const box = el('div', 'msg bot');
   const top = hits[0];
   if (!top || top.score < 2.2 || top.coverage < 0.34) {
     box.textContent = tr(ui.chat_none[0], ui.chat_none[1]);
     const a = el('a', '', tr(ui.nav_services[0], ui.nav_services[1])); a.href = '/services/'; a.style.display = 'block'; a.style.marginTop = '8px';
-    box.append(a);
+    box.append(a, waLink('custom', label('wa_custom_btn'), query));
     return box;
   }
   const d = top.doc;
@@ -44,12 +50,14 @@ function answer(query, hint = '') {
     more.forEach(h => { const li = el('li'); const a = el('a', '', h.doc.title); a.href = h.doc.url; li.append(a, ` · ${money(h.doc.idr)}`); ul.append(li); });
     box.append(el('span', 'src', tr(ui.chat_try[0], ui.chat_try[1])), ul);
   }
+  box.append(waLink(d.type === 'service' ? 'order' : 'chat', label(d.type === 'service' ? 'wa_order' : 'wa_admin'), d.type === 'service' ? '' : query, d.code || ''));
   return box;
 }
 
-export async function init(state, { tr, money }) {
+export async function init(state, { tr, money, waHref, waReady }) {
   const ui = await (await fetch('/assets/chat-ui.json')).json();
-  ctx = { tr, money, ui };
+  ctx = { tr, money, ui, waHref };
+  waReady().catch(() => {});
   const panel = $('#chat'); const opener = $('#chat-open'); const log = $('#chat-log'); const form = $('#chat-form'); const input = $('#chat-input');
   const openIt = async () => {
     panel.hidden = false; opener.hidden = true;

@@ -1,6 +1,6 @@
-// Receives a service request from the public order form.
+// Receives a service request from the public order form and stores it, encrypted, in Neon.
 import crypto from 'node:crypto';
-import { put } from '@vercel/blob';
+import { q, ensure, configured } from '../lib/db.mjs';
 import { encrypt, readBody } from '../lib/store.mjs';
 import { services } from '../data/services.mjs';
 
@@ -24,9 +24,10 @@ export default async function handler(req, res) {
   const lead = { reference, service: clean(b.service, 12), name: clean(b.name, 120), contact: clean(b.contact, 160), brief: clean(b.brief, 3000), lang: clean(b.lang, 12), at: new Date().toISOString() };
   if (!services.some(s => s.code === lead.service) || !lead.name || !lead.contact || !lead.brief || !b.agree) return res.status(400).json({ error: 'Missing fields' });
   const secret = process.env.ADMIN_SECRET;
-  if (!secret || !process.env.BLOB_READ_WRITE_TOKEN) return res.status(503).json({ error: 'Requests are not open yet' });
+  if (!secret || !configured()) return res.status(503).json({ error: 'Requests are not open yet' });
   try {
-    await put(`leads/${reference}.txt`, encrypt(lead, secret), { access: 'public', addRandomSuffix: true, contentType: 'text/plain' });
+    await ensure();
+    await q('insert into leads (reference, data) values ($1, $2)', [reference, encrypt(lead, secret)]);
     return res.status(200).json({ reference });
   } catch {
     return res.status(502).json({ error: 'Could not save the request' });
