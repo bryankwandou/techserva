@@ -208,24 +208,48 @@ async function accounts(panel) {
 }
 
 async function visits(panel) {
-  const days = h('select', { class: 'field', 'aria-label': 'Rentang', style: 'max-width:200px' }, [7, 30, 90, 365].map(d => h('option', { value: d, selected: d === 30 }, `${d} hari terakhir`)));
-  const out = h('div');
+  const days = h('select', { class: 'field', 'aria-label': 'Rentang', style: 'max-width:200px;min-height:42px' }, [7, 30, 90, 365].map(d => h('option', { value: d, selected: d === 7 }, `${d} hari terakhir`)));
+  const out = h('div'); let last = null;
+  const NAME = { 'web.id': 'techserva.web.id', 'my.id': 'techserva.my.id', 'vercel.app': 'techserva.vercel.app', other: 'lainnya' };
+  const card = (n, label, cls) => h('div', { class: `an-card ${cls || ''}` }, h('b', {}, fmt(n)), h('span', {}, label));
+  const table = (head, rows) => h('table', { class: 'data' }, h('thead', {}, h('tr', {}, ...head.map(x => h('th', {}, x)))), h('tbody', {}, rows));
+  const csv = () => {
+    if (!last) return;
+    const lines = [['bagian', 'nama', 'tayangan', 'pengunjung unik'].join(',')];
+    last.trend.forEach(t => lines.push(['harian', t.day, t.views, ''].join(',')));
+    last.sources.forEach(x => lines.push(['alamat', NAME[x.source] || x.source, x.views, x.uniques].join(',')));
+    last.pages.forEach(x => lines.push(['halaman', `"${x.path}"`, x.views, x.uniques].join(',')));
+    last.countries.forEach(x => lines.push(['negara', x.country, x.views, ''].join(',')));
+    last.wa.forEach(x => lines.push(['klik whatsapp', `"${x.detail}"`, x.clicks, ''].join(',')));
+    const a = h('a', { href: URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv' })), download: `techserva-pengunjung-${days.value}hari.csv` }); a.click(); URL.revokeObjectURL(a.href);
+  };
   const draw = async () => {
     out.replaceChildren(h('p', { class: 'note' }, 'Memuat'));
     try {
-      const r = await api('visits', { params: { days: days.value } });
-      const total = r.bySource.reduce((a, x) => a + x.n, 0);
-      const name = { 'web.id': 'techserva.web.id', 'my.id': 'techserva.my.id (dialihkan)', 'vercel.app': 'techserva.vercel.app', other: 'lainnya' };
+      const r = last = await api('visits', { params: { days: days.value } });
+      const max = Math.max(1, ...r.trend.map(t => t.views)); const total = Math.max(1, r.total.views);
       out.replaceChildren(
-        h('div', { class: 'stat-row' }, h('div', {}, h('b', {}, fmt(total)), 'kunjungan'), ...r.bySource.map(x => h('div', {}, h('b', {}, fmt(x.n)), name[x.source] || x.source))),
-        h('h3', { style: 'margin-top:24px' }, 'Per hari'),
-        r.byDay.length ? h('table', { class: 'data' }, h('thead', {}, h('tr', {}, ...['Tanggal', 'Alamat', 'Kunjungan'].map(x => h('th', {}, x)))), h('tbody', {}, r.byDay.map(x => h('tr', {}, h('td', {}, x.day), h('td', {}, name[x.source] || x.source), h('td', {}, fmt(x.n)))))) : h('p', { class: 'note' }, 'Belum ada kunjungan tercatat.'),
-        h('h3', { style: 'margin-top:24px' }, 'Negara teratas'),
-        h('table', { class: 'data' }, h('tbody', {}, r.byCountry.map(x => h('tr', {}, h('td', {}, x.country), h('td', {}, fmt(x.n)))))));
+        h('div', { class: 'an-cards' }, card(r.total.views, 'Total tayangan halaman'), card(r.total.uniques, 'Pengunjung unik', 'b'), card(r.total.today, 'Tayangan hari ini', 'c'), card(r.total.wa, 'Klik WhatsApp', 'd'), card(r.total.leads, 'Permintaan lewat formulir', 'e')),
+        h('section', { class: 'an-box' }, h('div', { class: 'an-head' }, h('b', {}, `Tren pengunjung, ${r.days} hari`), h('span', { class: 'note' }, `${fmt(r.total.views)} tayangan`)),
+          h('div', { class: 'an-chart' }, r.trend.map(t => h('div', { class: 'an-col', title: `${t.day}: ${t.views} tayangan (web.id ${t.web}, my.id ${t.my}, vercel.app ${t.vercel})` },
+            h('small', {}, t.views ? String(t.views) : ''),
+            h('div', { class: 'an-stack', style: `height:${(t.views / max) * 100}%` }, h('i', { class: 'web', style: `flex:${t.web}` }), h('i', { class: 'my', style: `flex:${t.my}` }), h('i', { class: 'vc', style: `flex:${t.vercel}` }), h('i', { class: 'ot', style: `flex:${Math.max(0, t.views - t.web - t.my - t.vercel)}` })),
+            h('span', {}, t.day.slice(5).replace('-', '/'))))),
+          h('p', { class: 'an-legend' }, h('i', { class: 'web' }), 'techserva.web.id ', h('i', { class: 'my' }), 'techserva.my.id ', h('i', { class: 'vc' }), 'techserva.vercel.app ', h('i', { class: 'ot' }), 'lainnya')),
+        h('div', { class: 'two', style: 'align-items:start;gap:24px' },
+          h('section', { class: 'an-box' }, h('div', { class: 'an-head' }, h('b', {}, 'Per alamat domain')), table(['Alamat', 'Tayangan', 'Unik'], r.sources.map(x => h('tr', {}, h('td', {}, NAME[x.source] || x.source), h('td', {}, fmt(x.views)), h('td', {}, fmt(x.uniques)))))),
+          h('section', { class: 'an-box' }, h('div', { class: 'an-head' }, h('b', {}, 'Negara')), table(['Negara', 'Tayangan'], r.countries.map(x => h('tr', {}, h('td', {}, x.country), h('td', {}, fmt(x.views))))))),
+        h('section', { class: 'an-box' }, h('div', { class: 'an-head' }, h('b', {}, 'Rincian per halaman'), h('span', { class: 'note' }, `${r.pages.length} halaman`)),
+          table(['Halaman', 'Tayangan', 'Pengunjung unik', '% dari total'], r.pages.map(x => h('tr', {}, h('td', { style: 'font-family:var(--mono);font-size:.85rem' }, x.path), h('td', {}, fmt(x.views)), h('td', {}, fmt(x.uniques)),
+            h('td', {}, h('div', { class: 'an-pct' }, h('i', { style: `width:${(x.views / total) * 100}%` })), `${((x.views / total) * 100).toFixed(1)}%`))))),
+        h('section', { class: 'an-box' }, h('div', { class: 'an-head' }, h('b', {}, 'Tombol WhatsApp yang diklik')),
+          r.wa.length ? table(['Tombol', 'Klik'], r.wa.map(x => h('tr', {}, h('td', { style: 'font-family:var(--mono);font-size:.85rem' }, x.detail || '-'), h('td', {}, fmt(x.clicks))))) : h('p', { class: 'note', style: 'padding:14px' }, 'Belum ada klik.')));
     } catch (e) { out.replaceChildren(h('p', { role: 'alert' }, e.message)); }
   };
   days.addEventListener('change', draw);
-  panel.replaceChildren(h('p', { class: 'note', style: 'margin-top:12px' }, 'Satu kunjungan = satu tab browser yang membuka situs. Tidak ada IP yang disimpan.'), days, out);
+  panel.replaceChildren(
+    h('p', { class: 'an-note' }, h('b', {}, 'Penghitung milik situs sendiri. '), 'Menghitung halaman yang benar-benar dibuka di browser setelah JavaScript berjalan, jadi bot dan crawler tidak terhitung. Data disimpan di database Neon Techserva. Tidak ada IP yang disimpan.'),
+    h('div', { class: 'row-gap' }, days, h('button', { class: 'btn', onclick: csv }, 'Unduh CSV'), h('button', { class: 'btn primary', onclick: draw }, 'Muat ulang')), out);
   draw();
 }
 

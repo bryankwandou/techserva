@@ -58,11 +58,21 @@ export default async function handler(req, res) {
   }
 
   if (action === 'visits') {
-    const days = Math.min(365, Math.max(1, +p.days || 30));
-    const bySource = await q(`select source, sum(n)::int as n from visits where day > current_date - $1::int group by source order by n desc`, [days]);
-    const byDay = await q(`select to_char(day, 'YYYY-MM-DD') as day, source, sum(n)::int as n from visits where day > current_date - $1::int group by day, source order by day desc`, [days]);
-    const byCountry = await q(`select country, sum(n)::int as n from visits where day > current_date - $1::int group by country order by n desc limit 15`, [days]);
-    return res.status(200).json({ days, bySource, byDay, byCountry });
+    const days = Math.min(365, Math.max(1, +p.days || 7));
+    const since = `now() - make_interval(days => ${days})`;
+    const [tot] = await q(`select count(*) filter (where kind = 'view')::int as views, count(distinct vid) filter (where kind = 'view' and vid <> '')::int as uniques,
+      count(*) filter (where kind = 'view' and at >= date_trunc('day', now()))::int as today, count(*) filter (where kind = 'wa')::int as wa from views where at > ${since}`);
+    const [lead] = await q(`select count(*)::int as n from leads where created_at > ${since}`);
+    const trend = await q(`select to_char(d, 'YYYY-MM-DD') as day, coalesce(sum((v.kind = 'view')::int), 0)::int as views,
+      coalesce(sum((v.kind = 'view' and v.source = 'web.id')::int), 0)::int as web, coalesce(sum((v.kind = 'view' and v.source = 'my.id')::int), 0)::int as my,
+      coalesce(sum((v.kind = 'view' and v.source = 'vercel.app')::int), 0)::int as vercel
+      from generate_series(date_trunc('day', now()) - make_interval(days => ${days - 1}), date_trunc('day', now()), interval '1 day') d
+      left join views v on date_trunc('day', v.at) = d group by d order by d`);
+    const sources = await q(`select source, count(*)::int as views, count(distinct vid)::int as uniques from views where kind = 'view' and at > ${since} group by source order by views desc`);
+    const pages = await q(`select path, count(*)::int as views, count(distinct vid)::int as uniques from views where kind = 'view' and at > ${since} group by path order by views desc limit 50`);
+    const countries = await q(`select country, count(*)::int as views from views where kind = 'view' and at > ${since} group by country order by views desc limit 20`);
+    const wa = await q(`select detail, count(*)::int as clicks from views where kind = 'wa' and at > ${since} group by detail order by clicks desc limit 30`);
+    return res.status(200).json({ days, total: { ...tot, leads: lead.n }, trend, sources, pages, countries, wa });
   }
 
   /* own account */

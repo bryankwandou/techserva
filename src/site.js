@@ -226,13 +226,22 @@ function initCatalog() {
   sel.addEventListener('change', sync); sync();
 }
 
-// Visit counter: one call per browser tab session, daily totals only (api/visit.js).
-function countVisit() {
+// Analytics in the site's own database (api/visit.js): every page load and every WhatsApp click.
+// The visitor id is a random string kept in this browser, used only to count unique visitors.
+function vid() {
+  let v = store.get('vid');
+  if (!v) { v = (crypto.randomUUID?.() || String(Math.random()).slice(2)); store.set('vid', v); }
+  return v;
+}
+function track(kind, detail = '') {
   try {
-    if (sessionStorage.getItem('counted')) return; sessionStorage.setItem('counted', '1');
-    const from = new URLSearchParams(location.search).get('from') || '';
-    navigator.sendBeacon?.('/api/visit', new Blob([JSON.stringify({ from })], { type: 'application/json' }));
-  } catch { /* storage blocked */ }
+    const body = JSON.stringify({ kind, detail, path: location.pathname, from: new URLSearchParams(location.search).get('from') || '', vid: vid() });
+    if (!navigator.sendBeacon?.('/api/visit', new Blob([body], { type: 'application/json' }))) fetch('/api/visit', { method: 'POST', body, keepalive: true, headers: { 'content-type': 'application/json' } });
+  } catch { /* offline */ }
+}
+function countVisit() {
+  track('view');
+  document.addEventListener('click', e => { const a = e.target.closest('a[href^="https://wa.me/"]'); if (a) track('wa', a.dataset.waSrc || a.className || 'link'); }, true);
 }
 async function boot() {
   countVisit();

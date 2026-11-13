@@ -20,6 +20,10 @@ const logo = fs.readFileSync(path.join(ROOT, 'src/logo.svg'), 'utf8');
 // Logo for the dark covers: the ticket turns light and its cut-out turns dark.
 const darkLogo = logo.replace('#17170f', '#TMP').replace('#f4f1e8', '#14140e').replace('#TMP', '#f4f1e8');
 const YEAR = new Date().getFullYear();
+// Cover mosaic: 24 different service pictures, the first of every category plus four more, so no picture repeats.
+const MOSAIC = [...categories.map(c => services.find(s => s.cat === c.id)), ...categories.slice(0, 4).map(c => services.filter(s => s.cat === c.id)[1])];
+const WA_NUMBER = '62895365173030';
+const WA_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8.4 19z"/></svg>';
 const font = f => `data:font/woff2;base64,${fs.readFileSync(path.join(ROOT, 'public/assets/fonts', f)).toString('base64')}`;
 
 function book(l) {
@@ -28,6 +32,10 @@ function book(l) {
   if (fs.existsSync(fixF)) Object.assign(dict, JSON.parse(fs.readFileSync(fixF, 'utf8')));
   const v = s => esc(dict[s] || s);
   const P = idr => esc(formatPrice(priceIn(idr, l.currency, fx.rates), l.code.startsWith('pa-') ? 'pa' : l.code));
+  // WhatsApp links with the message already written in this book's language. The last line names the page and service.
+  const raw = s => dict[s] || s;
+  const wa = (lines, src) => esc(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent([raw(ui.wa_hi), ...lines, '', `[${src} | ${l.code}]`].join('\n'))}`);
+  const waOrder = s => wa([raw(ui.wa_m_order), `${s.code} ${raw(s.name)}`, `${raw(ui.wa_m_price)} ${formatPrice(priceIn(s.idr, l.currency, fx.rates), l.code.startsWith('pa-') ? 'pa' : l.code)}`, '', raw(ui.wa_m_brief)], `pdf-catalog/${s.cat} | ${s.code}`);
   return `<!doctype html><html lang="${l.code === 'iw' ? 'he' : l.code}" dir="${l.rtl ? 'rtl' : 'ltr'}"><head><meta charset="utf-8"><title>${BRAND} ${v(ui.book_title)} (${esc(l.name)})</title><style>
 @font-face{font-family:'Instrument Serif';src:url(${font('instrument-serif.woff2')})}
 @font-face{font-family:Geist;src:url(${font('geist.woff2')});font-weight:100 900}
@@ -36,7 +44,7 @@ function book(l) {
 .front,.back{page:full;width:210mm;height:297mm;position:relative;overflow:hidden;background:#14140e;color:#f4f1e8;break-after:page}
 .back{break-after:auto;break-before:page;display:flex;flex-direction:column;justify-content:space-between;padding:18mm 18mm 20mm}
 .mosaic{position:absolute;left:-30mm;top:58mm;width:290mm;display:grid;grid-template-columns:repeat(6,1fr);gap:4mm;transform:rotate(-12deg);transform-origin:center}
-.mosaic div{background:#f3eee2;border-radius:3mm;padding:2.5mm}.mosaic div:nth-child(3n){background:#ffd9c7}.mosaic div:nth-child(5n){background:#e2dcfb}
+.mosaic div{border-radius:3mm;overflow:hidden}
 .mosaic svg{display:block;width:100%;height:auto}
 .shade{position:absolute;inset:0;background:linear-gradient(180deg,#14140e 0,#14140e 26%,rgba(20,20,14,.15) 46%,rgba(20,20,14,.1) 62%,#14140e 84%)}
 .front .top,.back .top{position:relative;display:flex;justify-content:space-between;align-items:center;font-size:9pt;letter-spacing:.04em}
@@ -108,16 +116,19 @@ td.t{white-space:nowrap}
 .card .pr{font:400 15pt/1 'Instrument Serif',Georgia,serif;color:#17170f}
 .card .row{display:flex;justify-content:space-between;align-items:baseline;gap:2mm;font-size:7.6pt;color:#57564a;border-top:.4pt dashed #d6d1c1;padding-top:1.4mm;margin-top:1mm}
 .card .row a{color:#c13a0a;text-decoration:none;font-weight:600}
+.card a.wa{display:flex;align-items:center;justify-content:center;gap:1.4mm;margin-top:1.6mm;padding:1.2mm 0;border:.6pt solid #1f8f4e;border-radius:1.2mm;color:#1f8f4e;font-size:7.4pt;font-weight:600;text-decoration:none}
+.card a.wa svg,.wa-back svg{width:3mm;height:3mm}
+.back .cta a.wa-back{display:flex;align-items:center;gap:2mm;margin-top:3mm;color:#3ccf7a;font-size:12pt}.back .cta a.wa-back svg{width:5mm;height:5mm}
 </style></head><body>
 <section class="front">
-<div class="mosaic">${[...categories, ...categories].slice(0, 24).map((c, i) => `<div>${categoryArt(c.id, i)}</div>`).join('')}</div>
+<div class="mosaic">${MOSAIC.map(s => `<div>${illustration(s, s.cat)}</div>`).join('')}</div>
 <div class="shade"></div>
 <div class="top"><span class="mark">${darkLogo}<b>${BRAND}</b></span><span>${YEAR} · <span dir="auto">${esc(l.native)}</span></span></div>
 <div class="title"><span class="kick">${v(ui.hero_kicker)}</span><h1>${v(ui.book_title)}</h1><p>${v(ui.book_sub)}</p></div>
 <div class="band"><div><b>500</b>${v(ui.fact_services)}</div><div><b>20</b>${v(ui.fact_categories)}</div><div><b>${langs.length}</b>${v(ui.fact_languages)}</div><div><b>${l.currency}</b>${v(ui.fact_currency)}</div></div>
 <div class="bottom"><span>${v(ui.footer_tag)}</span><a href="${SITE}">${SITE.replace('https://', '')}</a></div></section>
 <section class="sec"><h2>${v(ui.book_toc)}</h2><ul class="toc">${categories.map(c => `<li><a href="#${c.id}">${v(c.name)}</a></li>`).join('')}</ul>
-<h2 style="margin-top:9mm">${v(ui.book_how)}</h2><div class="steps">${[[ui.how1_t, ui.how1_d, 'web'], [ui.how2_t, ui.how2_d, 'audit'], [ui.how3_t, ui.how3_d, 'design'], [ui.how4_t, ui.how4_d, 'security']].map(([a, b, art], i) => `<div class="st">${categoryArt(art, i + 3)}<span class="no">0${i + 1}</span><b>${v(a)}</b><p>${v(b)}</p></div>`).join('')}</div>
+<h2 style="margin-top:9mm">${v(ui.book_how)}</h2><div class="steps">${[[ui.how1_t, ui.how1_d], [ui.how2_t, ui.how2_d], [ui.how3_t, ui.how3_d], [ui.how4_t, ui.how4_d]].map(([a, b], i) => `<div class="st"><span class="no">0${i + 1}</span><b>${v(a)}</b><p>${v(b)}</p></div>`).join('')}</div>
 <h2 style="margin-top:7mm">${v(ui.book_rules)}</h2><div class="rules">${[[ui.rule1_t, ui.rule1_d], [ui.rule2_t, ui.rule2_d], [ui.rule3_t, ui.rule3_d]].map(([a, b]) => `<p><b>${v(a)}</b>${v(b)}</p>`).join('')}</div>
 <p class="foot">${v(ui.book_note)} <a class="terms-link" href="${SITE}/terms/">${v(ui.terms_general)}</a></p></section>
 ${categories.map((c, ci) => { const t = catTerms[c.id]; return `<section class="cat" id="${c.id}">
@@ -126,10 +137,10 @@ ${categories.map((c, ci) => { const t = catTerms[c.id]; return `<section class="
 <div class="box"><h4>${v(ui.terms_need)}</h4><p>${v(t.need)}</p></div></div></div>
 <div class="grid">${services.filter(s => s.cat === c.id).map(s => `<div class="card"><div class="pic">${illustration(s, c.id)}</div><div class="body"><span class="code">${s.code}</span>
 <a class="nm" href="${SITE}/services/${s.slug}/">${v(s.name)}</a><span class="from">${v(ui.from)}</span><span class="pr">${P(s.idr)}</span>
-<div class="row"><span>${daysFor(s.idr)} ${v(ui.svc_days)}</span><a href="${SITE}/terms/${s.slug}/">${v(ui.book_link)} →</a></div></div></div>`).join('')}</div></section>`; }).join('')}
+<div class="row"><span>${daysFor(s.idr)} ${v(ui.svc_days)}</span><a href="${SITE}/terms/${s.slug}/">${v(ui.book_link)} →</a></div><a class="wa" href="${waOrder(s)}">${WA_ICON}${v(ui.wa_order)}</a></div></div>`).join('')}</div></section>`; }).join('')}
 <section class="back"><div class="top"><span class="mark">${darkLogo}<b>${BRAND}</b></span></div>
 <div><h2>${v(ui.book_how)}</h2><ol>${[[ui.how1_t, ui.how1_d], [ui.how2_t, ui.how2_d], [ui.how3_t, ui.how3_d], [ui.how4_t, ui.how4_d]].map(([a, b], i) => `<li><span>0${i + 1}</span><div><b>${v(a)}</b><p>${v(b)}</p></div></li>`).join('')}</ol></div>
-<div class="cta"><p>${v(ui.book_contact)}</p><a href="${SITE}">${SITE.replace('https://', '')}</a><small>${v(ui.book_note)}</small></div></section>
+<div class="cta"><p>${v(ui.book_contact)}</p><a href="${SITE}">${SITE.replace('https://', '')}</a><a class="wa-back" href="${wa([raw(ui.wa_m_catalog), ''], 'pdf-catalog/back-cover')}">${WA_ICON}WhatsApp +62 895-3651-73030</a><small>${v(ui.book_note)}</small></div></section>
 </body></html>`;
 }
 
@@ -137,17 +148,19 @@ const todo = langs.filter(l => !only.length || only.includes(l.code));
 const browser = await chromium.launch({ channel: 'chrome', headless: true }).catch(() => chromium.launch({ channel: 'msedge', headless: true }));
 let i = 0; const started = Date.now(); let bytes = 0;
 const worker = async () => {
-  const page = await browser.newPage();
+  let page = await browser.newPage();
   while (i < todo.length) {
     const l = todo[i++];
-    await page.setContent(book(l), { waitUntil: 'load' });
+    // A big book can take a while to lay out; one retry on a fresh page covers a stuck renderer.
+    try { await page.setContent(book(l), { waitUntil: 'load', timeout: 240000 }); }
+    catch { await page.close().catch(() => {}); page = await browser.newPage(); await page.setContent(book(l), { waitUntil: 'load', timeout: 240000 }); }
     await page.evaluate(() => document.fonts.ready);
-    const pdf = await page.pdf({ format: 'A4', printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false, tagged: false, outline: false });
+    const pdf = await page.pdf({ timeout: 240000, format: 'A4', printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false, tagged: false, outline: false });
     fs.writeFileSync(path.join(OUT, `${l.code}.pdf`), pdf); bytes += pdf.length;
     if (i % 20 === 0) console.log(i, 'of', todo.length, ((Date.now() - started) / 1000).toFixed(0) + 's');
   }
   await page.close();
 };
-await Promise.all(Array.from({ length: 4 }, worker));
+await Promise.all(Array.from({ length: 3 }, worker));
 await browser.close();
 console.log('books', todo.length, 'MB', (bytes / 1e6).toFixed(1));

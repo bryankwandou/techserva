@@ -332,3 +332,24 @@ pre.prompt { white-space: pre-wrap; background: var(--paper-2); padding: 14px; b
 .wa-foot svg, .wa-chat svg { width: 16px; height: 16px; flex: none; }
 #chat .wa-chat { display: inline-flex; margin-top: 10px; padding: 6px 12px; border: 1px solid var(--wa, #1f8f4e); border-radius: 8px; color: #1f8f4e; text-decoration: none; font-weight: 600; }
 [data-theme='dark'] #chat .wa-chat { color: #3ccf7a; border-color: #3ccf7a; }
+
+/* admin analytics */
+.an-note { margin: 14px 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); font-size: .9rem; color: var(--ink-2); }
+.an-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 14px 0; }
+.an-card { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); display: flex; flex-direction: column; gap: 4px; }
+.an-card b { font: 400 2.4rem/1 Georgia, serif; color: var(--accent); }
+.an-card.b b { color: #6d5ae6; } .an-card.c b { color: #1f9d6b; } .an-card.d b { color: #1f8f4e; } .an-card.e b { color: #c98a0c; }
+.an-card span { font-size: .85rem; color: var(--ink-2); }
+.an-box { border: 1px solid var(--line); border-radius: 12px; background: var(--card); margin: 14px 0; overflow: hidden; }
+.an-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.an-chart { display: flex; align-items: flex-end; gap: 8px; height: 190px; padding: 16px; }
+.an-col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; min-width: 0; }
+.an-col small { font-size: .72rem; color: var(--ink-2); }
+.an-col > span { font-size: .72rem; color: var(--ink-3); }
+.an-stack { width: 100%; min-height: 2px; display: flex; flex-direction: column-reverse; border-radius: 4px 4px 0 0; overflow: hidden; background: var(--line); }
+.an-stack i, .an-legend i { display: block; }
+i.web { background: var(--accent); } i.my { background: #6d5ae6; } i.vc { background: #1f9d6b; } i.ot { background: var(--ink-3); }
+.an-legend { padding: 0 16px 14px; font-size: .8rem; color: var(--ink-2); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.an-legend i { width: 10px; height: 10px; border-radius: 2px; margin-left: 8px; }
+.an-pct { display: inline-block; width: 60px; height: 4px; background: var(--line); border-radius: 2px; margin-right: 8px; vertical-align: middle; overflow: hidden; }
+.an-pct i { display: block; height: 100%; background: var(--accent); }
