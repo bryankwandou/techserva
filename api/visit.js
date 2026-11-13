@@ -14,8 +14,8 @@ export default async function handler(req, res) {
   try { b = await readBody(req); } catch { return res.status(204).end(); }
   if (/bot|crawl|spider|slurp|preview|lighthouse|headless|prerender/i.test(String(req.headers['user-agent'] || ''))) return res.status(204).end();
   const host = String(req.headers['x-forwarded-host'] || req.headers.host || '');
-  // A visitor sent over from techserva.my.id arrives with ?from=my (see middleware.js).
-  const source = b.from === 'my' ? 'my.id' : SOURCES.find(s => host.endsWith(s)) || 'other';
+  // Visitors sent over from techserva.my.id or techserva.vercel.app arrive with ?from=my or ?from=vercel (see middleware.js).
+  const source = b.from === 'my' ? 'my.id' : b.from === 'vercel' ? 'vercel.app' : SOURCES.find(s => host.endsWith(s)) || 'other';
   const country = String(req.headers['x-vercel-ip-country'] || '--').slice(0, 2).toUpperCase();
   const kind = b.kind === 'wa' ? 'wa' : 'view';
   const path = clean(b.path, 160) || '/';

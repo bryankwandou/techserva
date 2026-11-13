@@ -241,6 +241,8 @@ function track(kind, detail = '') {
 }
 function countVisit() {
   track('view');
+  // The ?from= mark has been counted; take it off the address so it is not shared or counted again.
+  const u = new URL(location.href); if (u.searchParams.has('from')) { u.searchParams.delete('from'); history.replaceState(history.state, '', u.pathname + u.search + u.hash); }
   document.addEventListener('click', e => { const a = e.target.closest('a[href^="https://wa.me/"]'); if (a) track('wa', a.dataset.waSrc || a.className || 'link'); }, true);
 }
 async function boot() {

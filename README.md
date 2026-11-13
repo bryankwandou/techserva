@@ -2,7 +2,7 @@
 
 IT services on one public price list: 500 services in 20 categories, each with a written scope, a starting price in local currency and its own terms page. The site reads in more than 200 languages.
 
-- Site: https://techserva.vercel.app
+- Site: https://techserva.web.id (techserva.my.id and techserva.vercel.app redirect here)
 - Report with screenshots: [docs/REPORT.md](docs/REPORT.md)
 - Idea audit: [docs/IDEA-AUDIT.md](docs/IDEA-AUDIT.md)
 - Name and domain research: [docs/NAME-RESEARCH.md](docs/NAME-RESEARCH.md)
