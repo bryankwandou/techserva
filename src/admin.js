@@ -251,7 +251,7 @@ async function visits(panel) {
   };
   days.addEventListener('change', draw);
   panel.replaceChildren(
-    h('p', { class: 'an-note' }, h('b', {}, 'Penghitung milik situs sendiri. '), 'Menghitung halaman yang benar-benar dibuka di browser setelah JavaScript berjalan, jadi bot dan crawler tidak terhitung. Data disimpan di database Neon Techserva. Tidak ada IP yang disimpan.'),
+    h('p', { class: 'an-note' }, h('b', {}, 'Penghitung milik situs sendiri. '), 'Tayangan dihitung setelah pengunjung menggerakkan pointer, menyentuh, menggulir, atau menekan tombol, jadi crawler dan pemindai domain otomatis tidak ikut. Angka sebelum 14 November 2026 masih memuat pemindai otomatis. Data disimpan di database Neon Techserva. Tidak ada IP yang disimpan.'),
     h('div', { class: 'row-gap' }, days, h('button', { class: 'btn', onclick: csv }, 'Unduh CSV'), h('button', { class: 'btn primary', onclick: draw }, 'Muat ulang')), out);
   draw();
 }

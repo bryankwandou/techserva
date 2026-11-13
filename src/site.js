@@ -233,14 +233,22 @@ function vid() {
   if (!v) { v = (crypto.randomUUID?.() || String(Math.random()).slice(2)); store.set('vid', v); }
   return v;
 }
+// Read once at load: the ?from= mark is taken off the address before the view is counted.
+const cameFrom = new URLSearchParams(location.search).get('from') || '';
 function track(kind, detail = '') {
   try {
-    const body = JSON.stringify({ kind, detail, path: location.pathname, from: new URLSearchParams(location.search).get('from') || '', vid: vid() });
+    const body = JSON.stringify({ kind, detail, path: location.pathname, from: cameFrom, vid: vid() });
     if (!navigator.sendBeacon?.('/api/visit', new Blob([body], { type: 'application/json' }))) fetch('/api/visit', { method: 'POST', body, keepalive: true, headers: { 'content-type': 'application/json' } });
   } catch { /* offline */ }
 }
 function countVisit() {
-  track('view');
+  // Scanners that open new domains in a real browser run JavaScript too, so a view only counts once a person
+  // does something a scanner does not: moves the pointer, touches, scrolls or presses a key.
+  if (!navigator.webdriver) {
+    const ev = ['pointermove', 'pointerdown', 'touchstart', 'scroll', 'keydown'];
+    const once = () => { ev.forEach(e => removeEventListener(e, once, true)); track('view'); };
+    ev.forEach(e => addEventListener(e, once, { capture: true, passive: true }));
+  }
   // The ?from= mark has been counted; take it off the address so it is not shared or counted again.
   const u = new URL(location.href); if (u.searchParams.has('from')) { u.searchParams.delete('from'); history.replaceState(history.state, '', u.pathname + u.search + u.hash); }
   document.addEventListener('click', e => { const a = e.target.closest('a[href^="https://wa.me/"]'); if (a) track('wa', a.dataset.waSrc || a.className || 'link'); }, true);
