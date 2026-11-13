@@ -125,7 +125,7 @@ td.t{white-space:nowrap}
 <div class="shade"></div>
 <div class="top"><span class="mark">${darkLogo}<b>${BRAND}</b></span><span>${YEAR} · <span dir="auto">${esc(l.native)}</span></span></div>
 <div class="title"><span class="kick">${v(ui.hero_kicker)}</span><h1>${v(ui.book_title)}</h1><p>${v(ui.book_sub)}</p></div>
-<div class="band"><div><b>500</b>${v(ui.fact_services)}</div><div><b>20</b>${v(ui.fact_categories)}</div><div><b>${langs.length}</b>${v(ui.fact_languages)}</div><div><b>${l.currency}</b>${v(ui.fact_currency)}</div></div>
+<div class="band"><div><b>${services.length}</b>${v(ui.fact_services)}</div><div><b>${categories.length}</b>${v(ui.fact_categories)}</div><div><b>${langs.length}</b>${v(ui.fact_languages)}</div><div><b>${l.currency}</b>${v(ui.fact_currency)}</div></div>
 <div class="bottom"><span>${v(ui.footer_tag)}</span><a href="${SITE}">${SITE.replace('https://', '')}</a></div></section>
 <section class="sec"><h2>${v(ui.book_toc)}</h2><ul class="toc">${categories.map(c => `<li><a href="#${c.id}">${v(c.name)}</a></li>`).join('')}</ul>
 <h2 style="margin-top:9mm">${v(ui.book_how)}</h2><div class="steps">${[[ui.how1_t, ui.how1_d], [ui.how2_t, ui.how2_d], [ui.how3_t, ui.how3_d], [ui.how4_t, ui.how4_d]].map(([a, b], i) => `<div class="st"><span class="no">0${i + 1}</span><b>${v(a)}</b><p>${v(b)}</p></div>`).join('')}</div>

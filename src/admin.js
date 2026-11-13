@@ -295,12 +295,30 @@ function templates(panel) {
   const show = async i => {
     const t = await api('template', { params: { index: i } });
     const copyBtn = h('button', { class: 'btn primary', onclick: e => copy(t.prompt, e.currentTarget) }, 'Copy for ChatGPT');
-    detail.replaceChildren(h('h2', { style: 'font-size:1.8rem;margin-top:22px' }, t.id), h('pre', { class: 'prompt' }, t.prompt), copyBtn);
+    const pack = h('p', { class: 'row-gap', style: 'margin-top:12px' },
+      h('button', { class: 'btn', onclick: e => dl({ service: t.code, segment: t.segment }, e.currentTarget) }, 'Megaprompt .md (10 tahap)'),
+      h('button', { class: 'btn', onclick: e => dl({ service: t.code, segment: t.segment, format: 'json' }, e.currentTarget) }, 'Workflow bundle .json'));
+    detail.replaceChildren(h('h2', { style: 'font-size:1.8rem;margin-top:22px' }, t.id), h('pre', { class: 'prompt' }, t.prompt), copyBtn, pack);
     detail.scrollIntoView({ block: 'nearest' });
   };
   q.addEventListener('input', () => { clearTimeout(timer); page = 0; timer = setTimeout(run, 220); });
   [cat, stage, seg].forEach(s => s.addEventListener('change', () => { page = 0; run(); }));
-  panel.replaceChildren(h('div', { class: 'row-gap' }, q, cat, stage, seg), info,
+  // Downloads: one service, or every service at once for the chosen client type.
+  const dl = async (params, btn) => {
+    const label = btn.textContent; btn.disabled = true; btn.textContent = 'Menyiapkan';
+    try {
+      const r = await fetch('/api/admin?' + new URLSearchParams({ action: 'megaprompt', ...params }), { credentials: 'same-origin' });
+      if (!r.ok) throw new Error('Gagal mengunduh');
+      const name = (/filename="([^"]+)"/.exec(r.headers.get('content-disposition') || '') || [])[1] || 'techserva.md';
+      const a = h('a', { href: URL.createObjectURL(await r.blob()), download: name }); a.click(); URL.revokeObjectURL(a.href);
+    } catch (err) { alert(err.message); } finally { btn.disabled = false; btn.textContent = label; }
+  };
+  const allSeg = () => seg.value || 'smb';
+  const bulk = h('div', { class: 'row-gap', style: 'margin:10px 0' },
+    h('span', { class: 'note' }, `Semua ${fmt(meta.services.length)} layanan sekaligus, untuk jenis klien yang dipilih:`),
+    h('button', { class: 'btn', onclick: e => dl({ service: 'all', segment: allSeg() }, e.currentTarget) }, 'Unduh semua megaprompt .md'),
+    h('button', { class: 'btn', onclick: e => dl({ service: 'all', segment: allSeg(), format: 'json' }, e.currentTarget) }, 'Unduh semua workflow .json'));
+  panel.replaceChildren(h('div', { class: 'row-gap' }, q, cat, stage, seg), bulk, info,
     h('table', { class: 'data' }, h('thead', {}, h('tr', {}, ...['Template id', 'Service', 'Stage', 'Client type'].map(x => h('th', {}, x)))), rows), pager, detail);
   run();
 }

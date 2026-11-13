@@ -26,7 +26,7 @@ with sync_playwright() as p:
         pg.mouse.move(x, y, steps=30); wait(850)
     cap("Search the whole list as you type")
     pg.mouse.move(300, 450); pg.click("#home-search"); pg.keyboard.type("discord", delay=90); wait(1500)
-    pg.fill("#home-search", ""); pg.mouse.click(30, 400)
+    pg.fill("#home-search", ""); pg.keyboard.press("Escape"); pg.evaluate("document.activeElement.blur()")
     cap("Scroll: the camera flies low, four towers form, the whole board, then fireflies")
     for sel, off in [("#cats", -0.5), ("#how", -0.25), ("#rules", -0.3), ("#end", 0.0)]:
         y0 = pg.evaluate("scrollY"); y1 = pg.evaluate(f"document.querySelector('{sel}').getBoundingClientRect().top + scrollY + innerHeight * {off}")
@@ -42,10 +42,10 @@ with sync_playwright() as p:
     pg.evaluate("localStorage.setItem('lang','en')")
     pg.goto(BASE + "/", wait_until="networkidle"); wait(600)
     cap("The assistant answers from the catalog, without an AI model")
-    pg.click("#chat-open"); wait(500)
+    pg.evaluate("document.querySelector('#chat-open').click()"); wait(500)
     for q in ["How much is a pen test?", "Can I pay with USDT?", "How many revisions do I get?"]:
         pg.fill("#chat-input", ""); pg.type("#chat-input", q, delay=45); pg.keyboard.press("Enter"); wait(1500)
-    pg.click("#chat-close")
+    pg.evaluate("document.querySelector('#chat-close').click()")
     cap("Every service has a price, a scope and a request form")
     pg.goto(BASE + "/services/web-app-penetration-test/", wait_until="networkidle"); wait(2000)
     cap("Every service has its own terms page")

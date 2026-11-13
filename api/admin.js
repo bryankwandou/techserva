@@ -3,7 +3,7 @@ import { list } from '@vercel/blob';
 import { decrypt, readBody } from '../lib/store.mjs';
 import { q, configured, hashPassword, checkPassword, token, sha } from '../lib/db.mjs';
 import { current, audit } from '../lib/auth.mjs';
-import { search, template, indexOf, render, STAGES, SEGMENTS, TOTAL } from '../lib/templates.mjs';
+import { search, template, indexOf, render, megaprompt, STAGES, SEGMENTS, TOTAL } from '../lib/templates.mjs';
 import { services, categories } from '../data/services.mjs';
 
 const USER_RE = /^[A-Za-z0-9_.-]{3,32}$/;
@@ -33,6 +33,18 @@ export default async function handler(req, res) {
   if (action === 'template') {
     const t = template(+p.index);
     return t ? res.status(200).json(t) : res.status(404).json({ error: 'No such template' });
+  }
+  // Megaprompt (.md) or workflow bundle (.json) for one service and client type; service=all gives every service in one file.
+  if (action === 'megaprompt') {
+    const sg = Math.max(0, SEGMENTS.findIndex(x => x[0] === p.segment));
+    const json = p.format === 'json';
+    const list = p.service === 'all' ? services.map((_, i) => i) : [services.findIndex(x => x.code === p.service)];
+    if (list[0] < 0) return res.status(404).json({ error: 'Unknown service' });
+    const items = list.map(i => megaprompt(i, sg));
+    const name = list.length > 1 ? `techserva-all-${services.length}-${SEGMENTS[sg][0]}` : items[0].name;
+    res.setHeader('content-type', json ? 'application/json; charset=utf-8' : 'text/markdown; charset=utf-8');
+    res.setHeader('content-disposition', `attachment; filename="${name}.${json ? 'json' : 'md'}"`);
+    return res.status(200).send(json ? JSON.stringify(list.length > 1 ? items.map(x => x.bundle) : items[0].bundle, null, 1) : items.map(x => x.md).join('\n---\n\n'));
   }
   if (action === 'prompt' && req.method === 'POST') {
     const s = services.findIndex(x => x.code === b.service);

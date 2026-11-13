@@ -110,7 +110,7 @@ with sync_playwright() as p:
 
     pg = page()
     pg.goto(BASE + "/services/", wait_until="networkidle")
-    check("500 services listed", pg.locator(".svc-list li").count() == 500, pg.locator(".svc-list li").count())
+    check("1000 services listed", pg.locator(".svc-list li").count() == 1000, pg.locator(".svc-list li").count())
     pg.fill("#svc-filter", "discord"); pg.wait_for_timeout(300)
     check("service filter works", 3 <= int(pg.locator("#svc-count").inner_text()) <= 8, pg.locator("#svc-count").inner_text())
     pg.screenshot(path=f"{OUT}/11-services.jpg", quality=80, type="jpeg")

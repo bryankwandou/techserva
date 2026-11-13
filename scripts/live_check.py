@@ -40,7 +40,7 @@ try:
     d = fitz.open(stream=pdf, filetype="pdf")
     uris = [l.get("uri", "") for p in d for l in p.get_links()]
     terms = sorted({u for u in uris if "/terms/" in u and not u.endswith("/terms/")})
-    check("PDF links to 500 different terms pages", len(terms) == 500, len(terms))
+    check("PDF links to 1000 different terms pages", len(terms) == 1000, len(terms))
     bad = [u for u in terms[:12] + terms[-12:] if req(u.replace("https://techserva.vercel.app", ""))[0] != 200]
     check("sampled PDF terms links open", not bad, bad[:3])
 except ImportError:

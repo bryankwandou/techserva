@@ -73,6 +73,8 @@ async def main():
             if code == "en": text = en
             else:
                 cache = json.loads((ROOT / "data" / "i18n" / f"{code}.json").read_text(encoding="utf-8"))
+                fix = ROOT / "data" / "i18n-fix" / f"{code}.json"  # hand fixes win, as on the site
+                if fix.exists(): cache.update(json.loads(fix.read_text(encoding="utf-8")))
                 text = [cache.get(s) for s in en]
                 if not all(text): print("no text", code); continue
             try:

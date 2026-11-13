@@ -18,7 +18,7 @@ for f in files:
     total += os.path.getsize(f)
     d = fitz.open(f)
     terms = {l.get("uri") for p in d for l in p.get_links() if "/terms/" in l.get("uri", "") and not l.get("uri", "").endswith("/terms/")}
-    if len(terms) != 500:
+    if len(terms) != 1000:
         bad.append((os.path.basename(f), len(terms)))
     d.close()
-print("files", len(files), "MB", round(total / 1e6, 1), "without 500 terms links", bad[:5])
+print("files", len(files), "MB", round(total / 1e6, 1), "without 1000 terms links", bad[:5])

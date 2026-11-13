@@ -184,7 +184,7 @@ function homeBody(lang) {
 </article>
 </div>
 </div>
-<div class="facts"><div><b>500</b>${T(ui.fact_services)}</div><div><b>20</b>${T(ui.fact_categories)}</div><div><b>${langs.length}</b>${T(ui.fact_languages)}</div><div><b>${new Set(langs.map(l => l.currency)).size}</b>${T(ui.fact_currency)}</div></div>
+<div class="facts"><div><b>${services.length}</b>${T(ui.fact_services)}</div><div><b>${categories.length}</b>${T(ui.fact_categories)}</div><div><b>${langs.length}</b>${T(ui.fact_languages)}</div><div><b>${new Set(langs.map(l => l.currency)).size}</b>${T(ui.fact_currency)}</div></div>
 
 <section class="block" id="cats"><div class="wrap">
 <div class="block-head"><h2 data-rise>${T(ui.cats_title)}</h2><p class="lead" data-rise>${T(ui.cats_lead)}</p></div>
@@ -238,13 +238,13 @@ for (const l of langs) {
 
 /* services index */
 write('services/index.html', shell({
-  title: `All 500 IT services and starting prices | ${BRAND}`, desc: 'Every service with a starting price, written scope and its own terms.', urlPath: '/services/',
+  title: `All ${services.length.toLocaleString('en-US')} IT services and starting prices | ${BRAND}`, desc: 'Every service with a starting price, written scope and its own terms.', urlPath: '/services/',
   body: T => `<div class="page"><div class="wrap">
 ${T(ui.hero_cta, 'h1')}
 <p class="lead">${T(ui.hero_lead)}</p>
 <div class="toolbar"><input class="field" id="svc-filter" type="search" data-kp="${K(ui.search_placeholder)}" placeholder="${esc(ui.search_placeholder)}" aria-label="${esc(ui.search_placeholder)}">
 <select class="field" id="svc-cat" aria-label="${esc(ui.all_categories)}" style="flex:0 1 320px"><option value="" data-k="${K(ui.all_categories)}">${esc(ui.all_categories)}</option>${categories.map(c => `<option value="${c.id}" data-k="${K(c.name)}">${esc(c.name)}</option>`).join('')}</select></div>
-<p class="note"><b id="svc-count">500</b> ${T(ui.search_results)}</p>
+<p class="note"><b id="svc-count">${services.length}</b> ${T(ui.search_results)}</p>
 <p style="margin:6px 0 18px">${WA('custom', 'services-list', T(ui.wa_custom_btn))}</p>
 ${categories.map(c => `<section class="svc-group" data-cat="${c.id}" id="${c.id}">${T(c.name, 'h2')}<p class="note" style="margin-bottom:12px">${T(c.blurb)}</p>
 <ul class="svc-list">${services.filter(s => s.cat === c.id).map(s => `<li data-en="${esc(s.name.toLowerCase())}"><a href="/services/${s.slug}/"><span class="code">${s.code}</span>${T(s.name)}${P(s.idr)}</a></li>`).join('')}</ul></section>`).join('')}
@@ -314,7 +314,7 @@ ${general.map(([h, b], i) => `<h3>${i + 1}. ${T(h)}</h3>${T(b, 'p')}`).join('')}
 
 /* general terms index */
 write('terms/index.html', shell({
-  title: `Terms of service | ${BRAND}`, desc: 'General terms and a separate terms page for each of the 500 services.', urlPath: '/terms/',
+  title: `Terms of service | ${BRAND}`, desc: `General terms and a separate terms page for each of the ${services.length.toLocaleString('en-US')} services.`, urlPath: '/terms/',
   body: T => `<div class="page"><div class="wrap legal">
 ${T(ui.terms_title, 'h1')}
 <p class="note">Effective 5 November 2026.</p>

@@ -1,8 +1,6 @@
 {
  "IT services with public prices": "Jasa IT dengan harga terbuka",
  "Every IT job, on one price list.": "Semua jasa IT, dalam satu daftar harga.",
- "Websites, apps, games, AI agents, security, hosting and more. 500 services, each with a written scope, a starting price in your currency and its own terms.": "Website, aplikasi, game, agen AI, keamanan, hosting, dan lainnya. 500 layanan, masing-masing dengan ruang lingkup tertulis, harga mulai dalam mata uang Anda, dan ketentuannya sendiri.",
- "Browse all 500 services": "Lihat semua 500 layanan",
  "Ask the assistant": "Tanya asisten",
  "See details": "Lihat detail",
  "From": "Mulai",
@@ -242,7 +240,6 @@
  "Secure coding workshop": "Workshop secure coding",
  "Take over an abandoned project": "Ambil alih proyek yang terbengkalai",
  "IT services with written scope and public prices.": "Jasa IT dengan ruang lingkup tertulis dan harga terbuka.",
- "500 IT services with prices and terms": "500 jasa IT lengkap dengan harga dan ketentuannya",
  "Service catalog": "Katalog layanan",
  "Order at": "Pesan di",
  "Service assistant": "Asisten layanan",
@@ -300,5 +297,13 @@
  "The site assistant could not answer my question:": "Asisten di situs belum bisa menjawab pertanyaan saya:",
  "I would like to know how an order works, step by step.": "Saya mau tahu cara pemesanan, langkah demi langkah.",
  "About this service:": "Soal layanan ini:",
- "Hello, I am writing to the Techserva admin.": "Halo admin Techserva."
+ "Hello, I am writing to the Techserva admin.": "Halo admin Techserva.",
+ "Website design, web apps, SEO, hosting, AI agents, automation and more. 1,000 services, each with a written scope, a starting price in your currency and its own terms.": "Desain website, aplikasi web, SEO, hosting, agen AI, otomasi, dan lainnya. 1.000 layanan, masing-masing dengan ruang lingkup tertulis, harga mulai dalam mata uang Anda, dan ketentuannya sendiri.",
+ "Browse all 1,000 services": "Lihat semua 1.000 layanan",
+ "1,000 IT services with prices and terms": "1.000 jasa IT lengkap dengan harga dan ketentuannya",
+ "1,000 services. Each one has a written scope, a starting price and its own terms, on the page before you talk to anyone.": "1.000 layanan. Masing-masing punya ruang lingkup tertulis, harga mulai, dan ketentuannya sendiri, sudah ada di halaman sebelum Anda bicara dengan siapa pun.",
+ "40 categories, 1,000 services": "40 kategori, 1.000 layanan",
+ "One of the 1,000": "Satu dari 1.000",
+ "Website design, web apps, SEO, hosting, AI agents, automation and more. Forty categories, one thousand services, and each one has its own page with its price and its terms.": "Desain website, aplikasi web, SEO, hosting, agen AI, otomasi, dan lainnya. Empat puluh kategori, seribu layanan, dan masing-masing punya halaman sendiri dengan harga dan ketentuannya.",
+ "We sell IT services at listed prices, with website design as our main work: websites for every kind of business, redesign and polish, SEO, hosting and site care, simple business apps, full-stack apps, frontend, backend, AI agents, chatbots, automation and workflows, plus mobile apps, games, business software, analytics, cybersecurity, audits, QA testing, critiques, pitch decks and maintenance. There are 1,000 services in 40 categories. Everything is software work done online; we do not install hardware on site.": "Kami menjual jasa IT dengan harga tertulis, dengan desain website sebagai pekerjaan utama: website untuk berbagai jenis usaha, redesain dan perapian tampilan, SEO, hosting dan perawatan situs, aplikasi bisnis sederhana, aplikasi full-stack, frontend, backend, agen AI, chatbot, otomasi dan alur kerja, serta aplikasi mobile, game, software bisnis, analitik, keamanan siber, audit, pengujian QA, kritik produk, pitch deck, dan perawatan. Ada 1.000 layanan dalam 40 kategori. Semua pekerjaan berupa software dan dikerjakan online; kami tidak memasang perangkat keras di lokasi."
 }

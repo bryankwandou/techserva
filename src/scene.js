@@ -3,7 +3,7 @@
 // Scroll flies the camera: city > low flight > four towers (the order steps) > whole board > fireflies.
 import * as THREE from '/assets/vendor/three.module.min.js';
 
-const SERVICES = 500; const PER_CAT = 25; const CATS = 20;
+const SERVICES = 1000; const PER_CAT = 25; const CATS = 40;
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const lerp = (a, b, t) => a + (b - a) * t;
 

@@ -1,5 +1,5 @@
 import { CODE_PREFIX } from './brand.mjs';
-// 20 categories x 25 services. Price = entry price in thousand IDR for Indonesia.
+// 40 categories x 25 services. Price = entry price in thousand IDR for Indonesia.
 // Other markets derive from it in lib/pricing.mjs.
 const raw = {
  web: ['Websites and landing pages', 'Pages that explain your business and bring in customer enquiries.', `
@@ -522,6 +522,526 @@ Secure coding workshop|2000
 Handover documentation|800
 Source code rescue|3000
 Take over an abandoned project|5000`],
+ industry: ['Websites by type of business', 'Ready-planned websites for a specific kind of business, with the pages that business needs.', `
+Coffee shop website|1200
+Bakery and cake shop website|1200
+Catering service website|1500
+Beauty salon website with booking|1800
+Barbershop website with booking|1500
+Dental clinic website|2500
+Law firm website|3000
+Accounting firm website|2500
+Gym and fitness studio website|2000
+Yoga studio website with class schedule|2000
+Photographer website with gallery|1500
+Architect and interior studio website|3000
+Travel agent website with tour packages|3500
+Car rental website|3500
+Laundry service website with price list|1200
+Auto repair shop website|1500
+Kindergarten website|2000
+Private tutoring website|1500
+Real estate agent website|3000
+Wedding organizer website|2000
+Printing shop website with order form|1800
+Florist website with order form|1800
+Pet shop and grooming website|1800
+Coworking space website with room booking|3000
+Place of worship website with event calendar|1500`],
+ polish: ['Website redesign and visual polish', 'Make an existing website look sharper, read easier and feel finished, page by page.', `
+Hero section redesign|600
+Navigation and menu redesign|700
+Footer redesign|300
+Product page redesign|1200
+About page redesign|600
+Contact page redesign|400
+Services page redesign|900
+Blog layout redesign|900
+Mobile menu redesign|500
+Font pairing and type scale|500
+Spacing and grid cleanup|700
+Button and form style cleanup|500
+Image crop and retouch for a site, 20 images|600
+Custom illustration set, 5 pictures|1500
+Custom icon set, 40 icons|1500
+Dark mode design for a site|1200
+Consistent card and section styles|800
+Before-and-after design report|500
+Brand colors applied to a site|600
+Trust section with reviews and logos|600
+Pricing table design|500
+Testimonial section design|400
+Photo gallery layout redesign|600
+404 and empty page design|300
+Full visual refresh, up to 10 pages|6000`],
+ seo: ['SEO and search visibility', 'Help people find the site on Google and other search engines, with a written report of what changed.', `
+Keyword research, one topic|800
+On-page SEO, 10 pages|1500
+Local SEO with Google Business Profile|1200
+Google Business Profile setup|500
+Schema markup for a site|1000
+Search Console setup and indexing repair|800
+Sitemap and robots file repair|400
+Page title and description rewrite, 20 pages|800
+Image SEO with alt text, 50 images|600
+Internal linking plan|800
+Content plan for 3 months|1500
+SEO article, 1 article|300
+SEO article pack, 10 articles|2500
+Category page SEO for a shop|1500
+Product page SEO for a shop, 50 products|2000
+SEO for a site in several languages|3000
+SEO-safe site migration|3000
+Broken link and redirect repair|600
+Backlink profile check|800
+Competitor keyword gap report|1000
+Answer engine and AI search readiness|1500
+Bing Webmaster setup|300
+Monthly SEO care, 1 month|2000
+Monthly SEO care, 12 months|20000
+Monthly ranking report|500`],
+ bizweb: ['Simple business management web apps', 'Small web apps that replace notebooks and spreadsheets for daily business records.', `
+Cashier app for a small shop|4000
+Stock book app|3000
+Order recap app|2500
+Customer book app|2000
+Expense tracker app|2000
+Daily sales report app|2000
+Debt and receivable tracker|2500
+Supplier purchase order app|3500
+Price list manager|1500
+Employee attendance with QR code|3000
+Simple payroll calculator|3500
+Rental management app|4000
+Laundry management app|3500
+Repair shop service log|3000
+Clinic queue app|3000
+School fee payment tracker|3500
+Boarding house management app|4000
+Catering order manager|3000
+Delivery route planner|4000
+Simple bookkeeping app|4000
+Membership card app|3000
+Appointment book app|2500
+Warranty and service tracker|2500
+Equipment loan log|2000
+Staff announcement board|1500`],
+ bizsys: ['Business software, ERP and CRM', 'Set up and adapt the systems that run sales, finance, stock and staff.', `
+Odoo setup, core modules|15000
+Odoo custom module|8000
+ERPNext setup|12000
+SAP Business One integration|20000
+Microsoft Dynamics 365 customization|20000
+NetSuite script|10000
+Salesforce setup|15000
+Salesforce custom object and flow|8000
+HubSpot CRM setup|5000
+Zoho CRM setup|5000
+Pipedrive setup|3000
+Accounting software setup|3000
+Payroll software setup|4000
+HR system setup|6000
+Warehouse management system setup|15000
+Manufacturing planning module|20000
+Point-of-sale system setup|4000
+Google Workspace setup|2500
+Microsoft 365 setup|3000
+SharePoint intranet|10000
+Jira and Confluence setup|3000
+Notion workspace setup|1500
+Airtable base design|2500
+Business data import into a new system|3000
+Business software training and handover|3000`],
+ sitecare: ['Hosting plans and website care', 'Keep a website online, updated, backed up and fast, month after month.', `
+Website care plan, basic, 1 month|500
+Website care plan, basic, 12 months|5000
+Website care plan, standard, 1 month|1000
+Website care plan, standard, 12 months|10000
+Website care plan, business, 1 month|2000
+Website care plan, business, 12 months|20000
+Managed WordPress hosting, 1 month|300
+Managed WordPress hosting, 12 months|3000
+Managed VPS, 1 month|1000
+Managed VPS, 12 months|10000
+Business email hosting setup|800
+Domain renewal and DNS care, 12 months|500
+CDN and caching setup|1000
+Move a site to a faster host|1500
+Daily backup with off-site copy|800
+Server security care, 1 month|1000
+Monthly website health report|400
+Uptime alert to WhatsApp|500
+Plugin and theme updates, 1 month|400
+Hosting control panel setup|800
+Website restore from backup|800
+Expired domain and hosting rescue|1500
+Shared hosting to cloud move|3000
+Traffic spike readiness check|1500
+Hosting account cleanup|500`],
+ agents: ['AI agents for business teams', 'AI agents that take over a repeated task for one team, with limits and a human check where it matters.', `
+Sales follow-up agent|6000
+Social media reply agent|5000
+Recruitment screening agent|7000
+Inventory reorder agent|6000
+Payment reconciliation agent|8000
+Customer onboarding agent|6000
+Quote generator agent|5000
+Order status agent|4000
+Review reply agent|3000
+Content repurposing agent|4000
+SEO content agent|5000
+Competitor monitoring agent|5000
+Lead research agent|5000
+Appointment reminder agent|3000
+Product description writer agent|3000
+Translation agent for business documents|4000
+Data entry agent|5000
+Weekly report agent|4000
+Purchase request agent|5000
+IT helpdesk agent|6000
+Owner assistant agent|6000
+Phone receptionist agent|10000
+WhatsApp AI sales agent|6000
+Multi-agent team for one workflow|15000
+AI agent safety limits and review|3000`],
+ workflow: ['Business workflows and approvals', 'Requests, approvals and hand-offs that move by themselves and leave a record.', `
+Approval workflow|3000
+Purchase request flow|3000
+Leave request flow|2500
+New employee onboarding workflow|3000
+Invoice approval flow|3000
+Document generation from templates|2500
+E-signature flow|3000
+Contract renewal reminders|1500
+Order-to-cash workflow|6000
+Social media cross-posting flow|1500
+Lead routing to sales staff|2000
+Customer feedback loop|2000
+Owner daily summary by WhatsApp|2000
+Data sync between two apps|2500
+Airtable automation pack|2000
+Make scenario pack, 5 flows|4000
+n8n AI workflow|4000
+Microsoft Power Automate flow|3000
+Google Apps Script automation|2500
+Email to task list automation|1500
+Form to CRM automation|1500
+Receipt scan to accounting|3500
+Payroll preparation automation|4000
+Stock opname reminder and record|2000
+Workflow map and automation plan|1500`],
+ bots: ['Chatbots by type of business', 'Chatbots that already know the questions a given kind of business gets every day.', `
+Restaurant chatbot with menu and orders|3000
+Clinic chatbot with appointment request|3500
+Hotel chatbot with room questions|3500
+School chatbot for parents|3000
+Property chatbot for listings|3500
+Online shop chatbot with order tracking|3500
+Salon chatbot with booking|2500
+Travel agent chatbot|3500
+Car dealer chatbot|3500
+Insurance questions chatbot|5000
+Gym chatbot with class schedule|2500
+Event chatbot with ticket questions|2500
+Law office intake chatbot|4000
+Recruitment chatbot|3500
+Internal IT helpdesk chatbot|4000
+HR questions chatbot|3500
+Chatbot in several languages|5000
+Phone voice chatbot|8000
+Website and WhatsApp chatbot bundle|5000
+Chatbot with payment link|3500
+Chatbot with booking calendar|3500
+Chatbot answer refresh, 1 month|800
+Chatbot conversation report|1000
+Chatbot persona and tone setup|800
+Chatbot move to another platform|3000`],
+ features: ['Features for an existing web app', 'One new feature added to an app you already have, tested and merged into your code.', `
+Export to Excel and PDF|1500
+Notification center|2500
+File manager in an app|3000
+Comments and mentions|2500
+Activity log|2000
+Kanban board view|3000
+Calendar view|2500
+Map view with markers|2500
+QR code scanner in the browser|2000
+Two-factor login|2000
+CSV import with checks|2000
+Admin panel for an app|5000
+Reports page with filters|3000
+In-app chat between users|5000
+Subscription plans and billing|5000
+Partner API with keys|5000
+Multi-step form wizard|1500
+Print-ready documents from an app|2000
+Bulk edit for records|2000
+Saved filters and views|1500
+User invitation by email|1500
+Approval status on records|2000
+Dashboard home page for an app|3000
+Dark mode for an app|1500
+Mobile-friendly pass for an app|2500`],
+ desktop: ['Desktop apps, extensions and plugins', 'Software that runs on a computer or inside the tools your team already uses.', `
+Electron desktop app|15000
+Tauri desktop app|15000
+Windows desktop app in .NET|18000
+macOS desktop app|20000
+Desktop app with Flutter|16000
+Desktop installer with auto-update|3000
+Command-line tool|3000
+Chrome extension|5000
+Firefox extension|5000
+Safari extension|7000
+Microsoft Edge extension|5000
+VS Code extension|6000
+JetBrains IDE plugin|8000
+Excel add-in|5000
+Google Sheets add-on|4000
+Microsoft Word add-in|5000
+Outlook add-in|6000
+Gmail add-on|5000
+Figma plugin|5000
+Photoshop plugin|8000
+Obsidian plugin|3000
+Notion integration|4000
+Raycast extension|3000
+Code signing for a desktop app|1500
+Old desktop app modernization|25000`],
+ cms: ['CMS and e-commerce platforms', 'Custom work on the platform your site or shop already runs on.', `
+WordPress custom theme|6000
+WordPress custom plugin|5000
+Elementor page build|1500
+WooCommerce custom feature|4000
+Shopify custom theme|8000
+Shopify custom app|15000
+Shopify store setup|4000
+Magento store customization|15000
+PrestaShop module|5000
+OpenCart extension|4000
+BigCommerce store setup|5000
+Drupal site build|12000
+Joomla site update|3000
+Ghost blog setup|1500
+Strapi CMS setup|4000
+Sanity CMS setup|4000
+Contentful setup|5000
+Payload CMS setup|5000
+Webflow CMS build|5000
+Wix Velo custom code|3000
+Squarespace custom code|2000
+Moodle setup and theme|6000
+Forum software setup|3000
+Content move from one CMS to another|4000
+Plugin conflict repair|800`],
+ nocode: ['No-code and low-code apps', 'Working apps built on no-code tools, faster and cheaper to change.', `
+Bubble app MVP|10000
+FlutterFlow app|10000
+Glide app|3000
+AppSheet app|3000
+Softr client portal|3000
+Retool internal tool|6000
+Appsmith internal tool|6000
+Budibase app|5000
+Power Apps canvas app|8000
+Power Pages site|8000
+Adalo app|6000
+Thunkable app|5000
+Framer site with CMS|4000
+WeWeb frontend|6000
+Xano backend|5000
+Airtable interface|2000
+Notion-based website|1500
+Typeform with logic|1000
+Jotform workflow|1500
+Google Sheets web app|2500
+No-code app repair|1000
+No-code to code migration|20000
+No-code tool choice review|1500
+No-code training for a team|2000
+Zapier Interfaces app|2500`],
+ payments: ['Payments and industry integrations', 'Connections to the payment, shipping, marketplace and industry systems a business uses.', `
+Midtrans payment integration|3000
+Xendit payment integration|3000
+QRIS payment integration|3000
+PayPal integration|2500
+Bank transfer auto-check|5000
+Virtual account payments|5000
+Subscription billing setup|6000
+Split payment for marketplaces|10000
+Shipping rate and tracking integration|4000
+Shopee store API integration|5000
+Tokopedia store API integration|5000
+Lazada store API integration|5000
+Amazon seller API integration|8000
+SMS gateway integration|2500
+OTP login by SMS and email|3000
+E-signature integration|4000
+Tax invoice integration|8000
+HL7 FHIR health records integration|20000
+Open banking API integration|15000
+Maps and geocoding integration|3000
+Delivery dispatch logic|15000
+Loyalty points system|8000
+Voucher and promo code engine|5000
+E-wallet top-up integration|6000
+Hotel channel manager connection|10000`],
+ martech: ['Marketing technology and tracking', 'Tracking, email and campaign tools wired up so every sale shows where it came from.', `
+Meta Pixel and Conversions API|2500
+Google Ads conversion tracking|2000
+TikTok Pixel and events API|2500
+Server-side tagging|5000
+Google Tag Manager cleanup|2000
+UTM link system|1000
+Email marketing platform setup|2500
+Klaviyo flows for a shop|5000
+Mailchimp automation|2500
+Abandoned cart email flow|2500
+Web push notifications|2000
+Referral program system|6000
+Affiliate tracking system|8000
+Customer data platform setup|10000
+Heatmap and session recording setup|1500
+A/B testing setup for landing pages|3000
+Lead scoring setup|4000
+HubSpot marketing automation|5000
+Popup and lead form setup|1000
+Review collection widget|1500
+Google Business Profile post automation|2000
+Programmatic SEO pages|10000
+Marketing attribution report|5000
+Campaign landing page tracking check|800
+Email list cleanup and segmentation|1500`],
+ cloud: ['Cloud architecture and identity', 'Cloud set up to be safe, repeatable and sized to the bill.', `
+Google Cloud starter setup|5000
+Azure starter setup|5000
+Terraform infrastructure as code|10000
+Pulumi infrastructure as code|10000
+Serverless API on AWS Lambda|8000
+Cloudflare Workers app|5000
+Microservices split plan|8000
+Service mesh setup|15000
+Auto-scaling setup|6000
+Multi-region failover|20000
+Disaster recovery setup|12000
+Grafana and Prometheus monitoring|6000
+Error tracking with Sentry|2000
+Single sign-on setup|6000
+Keycloak identity server|8000
+Okta setup|6000
+Microsoft Entra ID setup|6000
+Cloud access rights cleanup|5000
+Secrets manager setup|3000
+Object storage and CDN setup|3000
+Self-hosted Git server|4000
+Self-hosted email server|5000
+WireGuard VPN server|3000
+Cloud migration plan|8000
+Cloud migration, full move|25000`],
+ ml: ['Machine learning and computer vision', 'Models trained or tuned on your data, delivered with a written accuracy report.', `
+Image classification model|12000
+Object detection model|18000
+OCR for forms and receipts|10000
+Barcode and QR reading service|4000
+Face blur for photos and video|8000
+Product photo background removal|4000
+Speech-to-text pipeline|8000
+Text-to-speech voice setup|4000
+Text classification model|8000
+Name and entity extraction|10000
+Recommendation engine|18000
+Fraud detection model|20000
+Demand forecasting model|15000
+Time-series anomaly model|12000
+LLM fine-tuning on your data|20000
+Embedding search setup|8000
+Model serving API|8000
+MLOps pipeline|20000
+Model retraining schedule|6000
+Data labeling setup|4000
+Model accuracy report|4000
+On-device model for mobile|15000
+Video analytics pipeline|20000
+Product image generation pipeline|10000
+Translation model tuning|15000`],
+ dbeng: ['Databases and data engineering', 'Databases that stay fast, safe and backed up, and data that arrives on time.', `
+PostgreSQL tuning|4000
+MySQL tuning|4000
+MongoDB schema review|4000
+Redis cache setup|3000
+Elasticsearch setup|6000
+OpenSearch setup|6000
+Database replication setup|6000
+Database high availability|12000
+Point-in-time recovery setup|4000
+Database version upgrade|4000
+Database sharding plan|8000
+BigQuery setup|5000
+Snowflake setup|8000
+dbt models|8000
+Airflow pipeline|8000
+Kafka event stream|12000
+Change data capture pipeline|10000
+Data lake on object storage|12000
+Vector database setup|5000
+Time-series database setup|5000
+Database access control|3000
+Data masking for test copies|5000
+SQL report queries, 10 queries|2000
+Spreadsheet to database move|3000
+Database documentation|2500`],
+ itsupport: ['Remote IT support', 'Help with computers, accounts and software, done remotely over a screen share. No on-site visits.', `
+Remote PC troubleshooting, 1 hour|300
+Remote Mac troubleshooting, 1 hour|350
+Slow computer cleanup, remote|400
+Virus and adware removal, remote|500
+Software installation, remote|300
+Operating system update, remote|400
+Email account setup on devices|300
+Microsoft Office setup help|300
+Email account recovery help|500
+Social media account recovery help|800
+File recovery from cloud backup|800
+Printer driver setup, remote|250
+Router settings check, remote|400
+Password manager rollout|3000
+Mobile device management setup|8000
+Antivirus rollout for an office|4000
+Staff onboarding and offboarding checklist|2000
+IT helpdesk, 1 month|5000
+IT helpdesk, 12 months|50000
+Software license inventory|3000
+IT asset inventory system|4000
+Shared drive permission cleanup|3000
+Email move between providers|3000
+Google Workspace to Microsoft 365 move|8000
+Two-step login for all staff|2000`],
+ compliance: ['Compliance and IT governance', 'Written policies, checks and records that auditors, banks and partners ask for.', `
+Indonesian personal data law readiness|8000
+GDPR readiness review|8000
+ISO 27001 document set|20000
+ISO 27001 gap assessment|10000
+SOC 2 readiness review|15000
+PCI DSS self-assessment help|10000
+HIPAA technical checklist|8000
+IT policy set, 10 policies|8000
+Acceptable use policy|1500
+Information security risk register|5000
+Business continuity plan|8000
+Security questionnaire answers for a client|3000
+Vendor risk review|5000
+Access rights review|3000
+Audit log setup|4000
+Data retention schedule|3000
+Cookie consent banner setup|1500
+Privacy notice draft for an app|2000
+Data processing agreement checklist|1500
+Accessibility statement|1000
+Security awareness quiz for staff|2000
+Change management procedure|2500
+IT governance review|8000
+Compliance evidence folder setup|3000
+Compliance calendar with reminders|2000`],
 };
 
 const slugify = s => s.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
