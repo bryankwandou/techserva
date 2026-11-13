@@ -60,7 +60,10 @@ const linkBtn = (text, view) => h('button', { type: 'button', class: 'linkish', 
 async function googleBtn() {
   let on = false;
   try { on = (await auth('config')).google; } catch { /* offline */ }
-  return h('a', { class: 'btn google', href: on ? '/api/auth?action=google' : '#login=google-off', onclick: on ? null : e => { e.preventDefault(); location.hash = 'login=google-off'; } },
+  // Until a Google OAuth client is set on the server, the button shows as "coming soon" and does nothing.
+  if (!on) return h('span', { class: 'btn google soon', 'aria-disabled': 'true' },
+    h('svg', { viewBox: '0 0 24 24', width: '18', height: '18', 'aria-hidden': 'true' }), 'Masuk dengan Google', h('small', {}, 'Segera hadir'));
+  return h('a', { class: 'btn google', href: '/api/auth?action=google' },
     h('svg', { viewBox: '0 0 24 24', width: '18', height: '18', 'aria-hidden': 'true' }), 'Masuk dengan Google');
 }
 const gIcon = el => { const s = el.querySelector('svg'); if (s) s.innerHTML = '<path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5a5.6 5.6 0 0 1-2.4 3.7v3h3.9c2.3-2.1 3.5-5.2 3.5-8.8z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 7.9-2.9l-3.9-3c-1.1.7-2.4 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9h-4v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.4 14.4a7.2 7.2 0 0 1 0-4.6V6.7h-4a12 12 0 0 0 0 10.8z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 0 0 1.4 6.7l4 3.1C6.3 6.9 8.9 4.8 12 4.8z"/>'; return el; };
@@ -107,7 +110,7 @@ function forgot() {
       app.replaceChildren(card('Permintaan reset tercatat', h('p', { class: 'lead' }, 'Kalau akun itu ada, akun master akan melihat permintaan ini dan mengirim link reset kepada Anda. Link berlaku 2 jam.'), h('p', { class: 'auth-links' }, linkBtn('Kembali ke halaman masuk', 'login'))));
     } catch (err) { note.textContent = err.message; }
   } }, u, h('button', { class: 'btn primary', type: 'submit' }, 'Minta link reset'), note);
-  app.replaceChildren(card('Lupa password', h('p', { class: 'note' }, 'Akun yang tersambung ke Google juga bisa langsung masuk dengan tombol Google.'), form, h('p', { class: 'auth-links' }, linkBtn('Kembali ke halaman masuk', 'login'))));
+  app.replaceChildren(card('Lupa password', h('p', { class: 'note' }, 'Masukkan username atau email akun Anda. Akun master akan membuatkan link untuk mengganti password.'), form, h('p', { class: 'auth-links' }, linkBtn('Kembali ke halaman masuk', 'login'))));
 }
 
 function reset(t) {
@@ -264,7 +267,7 @@ function mine(panel) {
       h('h3', {}, 'Ganti password'), cur, p, h('button', { class: 'btn primary', type: 'submit' }, 'Simpan password')),
     h('div', {},
       h('form', { class: 'form', onsubmit: async e => { e.preventDefault(); try { await api('email', { body: { email: m.value } }); meta.me.email = m.value; say('Email disimpan. Akun Google dengan email ini bisa dipakai untuk masuk.'); } catch (err) { say(err.message); } } },
-        h('h3', {}, 'Email dan Google'), h('p', { class: 'note' }, meta.me.google ? 'Akun Google sudah tersambung.' : 'Belum ada akun Google yang tersambung. Isi email Gmail Anda, lalu masuk sekali dengan tombol Google.'), m,
+        h('h3', {}, 'Email dan Google'), h('p', { class: 'note' }, meta.me.google ? 'Akun Google sudah tersambung.' : 'Login Google segera hadir. Email yang disimpan di sini nanti dipakai untuk menyambungkan akun Google Anda.'), m,
         h('div', { class: 'row-gap' }, h('button', { class: 'btn', type: 'submit' }, 'Simpan email'), meta.me.google ? h('button', { class: 'tool', type: 'button', onclick: async () => { await api('unlink-google', { body: {} }); meta.me.google = false; say('Akun Google dilepas.'); } }, 'Lepas Google') : null)),
       h('div', { class: 'form' }, h('h3', {}, 'Sesi'), h('button', { class: 'tool', onclick: async () => { await api('signout-all', { body: {} }); login('Semua sesi sudah keluar.'); } }, 'Keluar dari semua perangkat')),
       note)));

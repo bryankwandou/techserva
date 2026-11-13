@@ -353,3 +353,7 @@ i.web { background: var(--accent); } i.my { background: #6d5ae6; } i.vc { backgr
 .an-legend i { width: 10px; height: 10px; border-radius: 2px; margin-left: 8px; }
 .an-pct { display: inline-block; width: 60px; height: 4px; background: var(--line); border-radius: 2px; margin-right: 8px; vertical-align: middle; overflow: hidden; }
 .an-pct i { display: block; height: 100%; background: var(--accent); }
+
+.btn.google.soon { opacity: .6; cursor: not-allowed; gap: 8px; }
+.btn.google.soon:hover { color: inherit; background-color: var(--paper); }
+.btn.google.soon small { font-size: .72rem; padding: 2px 6px; border: 1px solid var(--line); border-radius: 4px; }
